@@ -21,7 +21,7 @@ files.
 If you put the following line into your .emacs file:
 
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'before-save-hook 'ot-insert-toc)
+  (add-hook 'org-mode-hook 'org-toc-enable)
 #+END_SRC
 
 Then every time you'll be saving an org file, the first headline with

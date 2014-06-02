@@ -31,7 +31,7 @@
 ;; To enable this functionality put into your .emacs file something
 ;; like
 
-;; (add-hook 'before-save-hook 'ot-insert-toc)
+;; (add-hook 'org-mode-hook 'org-toc-enable)
 
 ;; After that, every time you'll be saving an org file the first
 ;; headline with a :TOC: tag will be updated with the current table of
@@ -41,24 +41,29 @@
 
 ;;; Code:
 
+(defgroup org-toc nil
+  "org-toc is a utility to have an up-to-date table of contents
+in the org files without exporting (useful primarily for readme
+files on GitHub)")
+
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
-(defconst ot-org-toc-regexp "^*.*:toc\\(@[0-9]\\|\\(@[0-9]@[a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
+(defconst org-toc-org-toc-regexp "^*.*:toc\\(@[0-9]\\|\\(@[0-9]@[a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
   "Regexp to find the heading with the :toc: tag")
-(defconst ot-special-chars-regexp "[][~`!@#$%^&*()+={}|\:;\"'<,>.?/]"
+(defconst org-toc-special-chars-regexp "[][~`!@#$%^&*()+={}|\:;\"'<,>.?/]"
   "Regexp with the special characters (which are omitted in hrefs
   by GitHub)")
 
-(defcustom ot-max-depth 2
+(defcustom org-toc-max-depth 2
   "Maximum depth of the headings to use in the table of
 contents. The default of 2 uses only the highest level headings
 and their subheadings (one and two stars)."
   :group 'org-toc)
 
-(defcustom ot-hrefify-default "gh"
+(defcustom org-toc-hrefify-default "gh"
   "Default hrefify function to use."
   :group 'org-toc)
 
-(defun ot-raw-toc ()
+(defun org-toc-raw-toc ()
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading."
   (let ((content (buffer-substring-no-properties
@@ -70,28 +75,28 @@ i.e. simply flush everything that's not a heading."
 
       ;; don't include the TOC itself
       (goto-char (point-min))
-      (re-search-forward ot-org-toc-regexp)
+      (re-search-forward org-toc-org-toc-regexp)
       (beginning-of-line)
       (delete-region (point) (progn (forward-line 1) (point)))
 
       (buffer-substring-no-properties
        (point-min) (point-max)))))
 
-(defun ot-hrefify-gh (str)
+(defun org-toc-hrefify-gh (str)
   "Given a heading, transform it into a href using the GitHub
 rules."
   (let* ((spc-fix (replace-regexp-in-string " " "-" str))
          (upcase-fix (replace-regexp-in-string "[A-Z]" 'downcase spc-fix t))
-         (special-chars-fix (replace-regexp-in-string ot-special-chars-regexp "" upcase-fix t))
+         (special-chars-fix (replace-regexp-in-string org-toc-special-chars-regexp "" upcase-fix t))
          )
     (concat "#" special-chars-fix)))
 
-(defun ot-hrefify-org (str)
+(defun org-toc-hrefify-org (str)
   "Given a heading, transform it into a href using the org-mode
 rules."
   str)
 
-(defun ot-hrefify-toc (toc hrefify)
+(defun org-toc-hrefify-toc (toc hrefify)
   "Format the raw `toc' using the `hrefify' function to transform
 each heading into a link."
   (with-temp-buffer
@@ -124,7 +129,7 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
-(defun ot-flush-subheadings (toc max-depth)
+(defun org-toc-flush-subheadings (toc max-depth)
   "Flush subheadings of the raw `toc' deeper than `max-depth'."
   (with-temp-buffer
     (insert toc)
@@ -138,7 +143,7 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
-(defun ot-insert-toc ()
+(defun org-toc-insert-toc ()
   "Looks for a headline with the TOC tag and updates it with the
 current table of contents.
 
@@ -162,16 +167,16 @@ following tag formats:
       (goto-char (point-min))
       (let ((case-fold-search t))
         ;; find the first heading with the :TOC: tag
-        (when (re-search-forward ot-org-toc-regexp (point-max) t)
+        (when (re-search-forward org-toc-org-toc-regexp (point-max) t)
 
           (let* ((tag (match-string 1))
                  (depth (if tag
                             (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
-                          ot-max-depth))
+                          org-toc-max-depth))
                  (hrefify-tag (if (and tag (>= (length tag) 4))
                                   (downcase (substring tag 3))
-                                ot-hrefify-default))
-                 (hrefify-string (concat "ot-hrefify-" hrefify-tag))
+                                org-toc-hrefify-default))
+                 (hrefify-string (concat "org-toc-hrefify-" hrefify-tag))
                  (hrefify (intern-soft hrefify-string)))
             (if hrefify
                 (progn
@@ -189,5 +194,13 @@ following tag formats:
                                    (end-of-line)
                                    (point)))
 
-                  (insert (ot-hrefify-toc (ot-flush-subheadings (ot-raw-toc) depth) hrefify)))
+                  (insert (org-toc-hrefify-toc (org-toc-flush-subheadings (org-toc-raw-toc) depth) hrefify)))
               (message (concat "Hrefify function " hrefify-string " is not found")))))))))
+
+;;;###autoload
+(defun org-toc-enable ()
+  "Enable org-toc in this buffer."
+  (add-hook 'before-save-hook 'ot-insert-toc nil t))
+
+(provide 'org-toc)
+;;; org-toc.el ends here
