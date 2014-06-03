@@ -13,6 +13,7 @@ files.
      - [[#via-packageel][via package.el]]
      - [[#manual][Manual]]
  - [[#use][Use]]
+ - [[#example][Example]]
 
 * Installation
 ** via package.el

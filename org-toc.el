@@ -201,7 +201,7 @@ following tag formats:
 ;;;###autoload
 (defun org-toc-enable ()
   "Enable org-toc in this buffer."
-  (add-hook 'before-save-hook 'ot-insert-toc nil t))
+  (add-hook 'before-save-hook 'org-toc-insert-toc nil t))
 
 (provide 'org-toc)
 ;;; org-toc.el ends here
