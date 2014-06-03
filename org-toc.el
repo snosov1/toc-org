@@ -44,7 +44,8 @@
 (defgroup org-toc nil
   "org-toc is a utility to have an up-to-date table of contents
 in the org files without exporting (useful primarily for readme
-files on GitHub)")
+files on GitHub)"
+  :group 'org)
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
 (defconst org-toc-org-toc-regexp "^*.*:toc\\(@[0-9]\\|\\(@[0-9]@[a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
