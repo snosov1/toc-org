@@ -1,4 +1,4 @@
-* Intro
+* About
 
 org-toc is a utility to have an up-to-date table of contents in the
 org files without exporting (useful primarily for readme files on
@@ -8,24 +8,42 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
 files.
 
 * Table of Contents                                                     :TOC:
- - [[#intro][Intro]]
+ - [[#about][About]]
  - [[#installation][Installation]]
+     - [[#via-packageel][via package.el]]
+     - [[#manual][Manual]]
  - [[#use][Use]]
 
 * Installation
-
-- *TBD*
+** via package.el
+This is the simplest method if you have the package.el module
+(built-in since Emacs 24.1) you can simply use =M-x package-install=
+and then put the following snippet in your ~/.emacs file
+#+BEGIN_SRC elisp
+  (eval-after-load "org-toc-autoloads"
+    '(progn
+       (if (require org-toc nil t)
+           (add-hook 'org-mode-hook 'org-toc-enable)
+         (warn "org-toc not found"))))
+#+END_SRC
+** Manual
+- Create folder ~/.emacs.d if you don't have it
+- Go to it and clone org-toc there
+  #+BEGIN_SRC sh
+    git clone https://github.com/snosov1/org-toc.git
+  #+END_SRC
+- Put this in your ~/.emacs file
+  #+BEGIN_SRC elisp
+    (add-to-list 'load-path "~/.emacs.d")
+    (when (require org-toc nil t)
+      (add-hook 'org-mode-hook 'org-toc-enable))
+  #+END_SRC
 
 * Use
 
-If you put the following line into your .emacs file:
-
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'org-mode-hook 'org-toc-enable)
-#+END_SRC
-
-Then every time you'll be saving an org file, the first headline with
-a :TOC: tag will be updated with the current table of contents.
+After the installation, every time you'll be saving an org file, the
+first headline with a :TOC: tag will be updated with the current table
+of contents.
 
 To add a TOC tag, you can use the command =org-set-tags-command=.
 
@@ -39,3 +57,19 @@ tag formats:
   GitHub-style hrefs in the table of contents (the default). The other
   supported href style is 'org', which is the default org style (you
   can use C-c C-o to go to the headline at point).
+
+* Example
+#+BEGIN_SRC org
+  * About
+  * Table of Contents                                           :TOC:
+    - [[#about][About]]
+    - [[#installation][Installation]]
+        - [[#via-packageel][via package.el]]
+        - [[#manual][Manual]]
+    - [[#use][Use]]
+  * Installation
+  ** via package.el
+  ** Manual
+  * Use
+  * Example
+#+END_SRC
