@@ -22,7 +22,7 @@ and then put the following snippet in your ~/.emacs file
 #+BEGIN_SRC elisp
   (eval-after-load "org-toc-autoloads"
     '(progn
-       (if (require org-toc nil t)
+       (if (require 'org-toc nil t)
            (add-hook 'org-mode-hook 'org-toc-enable)
          (warn "org-toc not found"))))
 #+END_SRC
@@ -35,7 +35,7 @@ and then put the following snippet in your ~/.emacs file
 - Put this in your ~/.emacs file
   #+BEGIN_SRC elisp
     (add-to-list 'load-path "~/.emacs.d/org-toc")
-    (when (require org-toc nil t)
+    (when (require 'org-toc nil t)
       (add-hook 'org-mode-hook 'org-toc-enable))
   #+END_SRC
 
