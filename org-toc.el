@@ -37,7 +37,7 @@
 ;; headline with a :TOC: tag will be updated with the current table of
 ;; contents.
 
-;; For details, see https://github.com/snosov1/org-toc/README.org
+;; For details, see https://github.com/snosov1/org-toc
 
 ;;; Code:
 
@@ -72,7 +72,7 @@ i.e. simply flush everything that's not a heading."
     (with-temp-buffer
       (insert content)
       (goto-char (point-min))
-      (keep-lines "^\*")
+      (keep-lines "^\*+[ ]")
 
       ;; don't include the TOC itself
       (goto-char (point-min))
