@@ -12,6 +12,7 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
      - [[#via-packageel][via package.el]]
      - [[#manual][Manual]]
  - [[#use][Use]]
+ - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
 
 * Installation
@@ -57,6 +58,23 @@ tag formats:
   GitHub-style hrefs in the table of contents (the default). The other
   supported href style is 'org', which is the default org style (you
   can use C-c C-o to go to the headline at point).
+
+* Different href styles
+
+Currently, only 2 href styles are supported: =gh= and =org=. You can easily
+define your own styles. If you use the tag =:TOC@2@STYLE:= (=STYLE= being a
+style name), then the package will look for a function named
+=org-toc-hrefify-STYLE=, which accepts a heading string and returns a href
+corresponding to that heading.
+
+E.g. for =org= style it simply returns input as is:
+
+#+BEGIN_SRC emacs-lisp
+  (defun org-toc-hrefify-org (str)
+    "Given a heading, transform it into a href using the org-mode
+  rules."
+    str)
+#+END_SRC
 
 * Example
 #+BEGIN_SRC org
