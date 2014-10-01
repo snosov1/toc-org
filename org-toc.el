@@ -66,7 +66,8 @@ and their subheadings (one and two stars)."
 
 (defun org-toc-raw-toc ()
   "Return the \"raw\" table of contents of the current file,
-i.e. simply flush everything that's not a heading."
+i.e. simply flush everything that's not a heading and strip
+tags."
   (let ((content (buffer-substring-no-properties
                   (point-min) (point-max))))
     (with-temp-buffer
@@ -79,6 +80,14 @@ i.e. simply flush everything that's not a heading."
       (re-search-forward org-toc-org-toc-regexp)
       (beginning-of-line)
       (delete-region (point) (progn (forward-line 1) (point)))
+
+      ;; strip tags
+
+      ;; TODO :export: and :noexport: tags semantic should be probably
+      ;; implemented
+      (goto-char (point-min))
+      (while (re-search-forward "\s*:[[:word:]:@]*:\s*$" nil t)
+        (replace-match "" nil nil))
 
       (buffer-substring-no-properties
        (point-min) (point-max)))))
