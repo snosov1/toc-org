@@ -48,7 +48,7 @@ files on GitHub)"
   :group 'org)
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
-(defconst org-toc-org-toc-regexp "^*.*:toc\\(@[0-9]\\|\\(@[0-9]@[a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
+(defconst org-toc-org-toc-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
   "Regexp to find the heading with the :toc: tag")
 (defconst org-toc-special-chars-regexp "[][~`!@#$%^&*()+={}|\:;\"'<,>.?/]"
   "Regexp with the special characters (which are omitted in hrefs

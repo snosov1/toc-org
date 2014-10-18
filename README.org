@@ -59,6 +59,8 @@ tag formats:
   supported href style is 'org', which is the default org style (you
   can use C-c C-o to go to the headline at point).
 
+You can also use =_= as separator, instead of =@=.
+
 * Different href styles
 
 Currently, only 2 href styles are supported: =gh= and =org=. You can easily
