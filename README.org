@@ -1,4 +1,4 @@
-[[https://travis-ci.org/snosov1/org-toc][file:https:/travis-ci.org/snosov1/org-toc.svg?branch%3Dmaster]]
+[[https://travis-ci.org/snosov1/org-toc][file:https:/travis-ci.org/snosov1/org-toc.svg?branch=master]]
 
 * About
 
