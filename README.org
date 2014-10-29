@@ -1,3 +1,5 @@
+[[https://travis-ci.org/snosov1/org-toc][file:https:/travis-ci.org/snosov1/org-toc.svg?branch%3Dmaster]]
+
 * About
 
 org-toc is a utility to have an up-to-date table of contents in the
@@ -17,9 +19,12 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
 
 * Installation
 ** via package.el
-This is the simplest method if you have the package.el module
-(built-in since Emacs 24.1) you can simply use =M-x package-install=
-and then put the following snippet in your ~/.emacs file
+
+[[http://melpa.org/#/org-toc][file:http://melpa.org/packages/org-toc-badge.svg]]
+
+This is the simplest method if you have the package.el module (built-in since
+Emacs 24.1) you can simply use =M-x package-install= after setting up the [[http://melpa.org/#/getting-started][MELPA]]
+repository and then put the following snippet in your ~/.emacs file
 #+BEGIN_SRC elisp
   (eval-after-load "org-toc-autoloads"
     '(progn
