@@ -24,18 +24,19 @@
 
 ;;; Commentary:
 
-;; org-toc is a utility to have an up-to-date table of contents in the
-;; org files without exporting (useful primarily for readme files on
-;; GitHub).
+;; org-toc helps you to have an up-to-date table of contents in org files
+;; without exporting (useful primarily for readme files on GitHub).
 
-;; To enable this functionality put into your .emacs file something
-;; like
+;; After installation put into your .emacs file something like
 
-;; (add-hook 'org-mode-hook 'org-toc-enable)
+;; (eval-after-load "org-toc-autoloads"
+;;   '(progn
+;;      (if (require 'org-toc nil t)
+;;          (add-hook 'org-mode-hook 'org-toc-enable)
+;;        (warn "org-toc not found"))))
 
-;; After that, every time you'll be saving an org file the first
-;; headline with a :TOC: tag will be updated with the current table of
-;; contents.
+;; And every time you'll be saving an org file, the first headline with a :TOC:
+;; tag will be updated with the current table of contents.
 
 ;; For details, see https://github.com/snosov1/org-toc
 
@@ -129,8 +130,7 @@ tags."
 rules."
   (let* ((spc-fix (replace-regexp-in-string " " "-" str))
          (upcase-fix (replace-regexp-in-string "[A-Z]" 'downcase spc-fix t))
-         (special-chars-fix (replace-regexp-in-string org-toc-special-chars-regexp "" upcase-fix t))
-         )
+         (special-chars-fix (replace-regexp-in-string org-toc-special-chars-regexp "" upcase-fix t)))
     (concat "#" special-chars-fix)))
 
 (ert-deftest org-toc-test-hrefify-gh ()
@@ -177,6 +177,12 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
+(ert-deftest org-toc-test-hrefify-toc ()
+  (should (equal (org-toc-hrefify-toc "* About\n" 'upcase)
+                 " - [[ABOUT][About]]\n"))
+  (should (equal (org-toc-hrefify-toc "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 'upcase)
+                 " - [[ABOUT][About]]\n - [[INSTALLATION][Installation]]\n     - [[VIA PACKAGE.EL][via package.el]]\n     - [[MANUAL][Manual]]\n - [[USE][Use]]\n - [[DIFFERENT HREF STYLES][Different href styles]]\n - [[EXAMPLE][Example]]\n")))
+
 (defun org-toc-flush-subheadings (toc max-depth)
   "Flush subheadings of the raw `toc' deeper than `max-depth'."
   (with-temp-buffer
@@ -190,6 +196,23 @@ each heading into a link."
 
     (buffer-substring-no-properties
      (point-min) (point-max))))
+
+(ert-deftest org-toc-test-flush-subheadings ()
+  (should (equal (org-toc-flush-subheadings "* About\n" 0)
+                 ""))
+  (should (equal (org-toc-flush-subheadings "* About\n" 1)
+                 "* About\n"))
+  (should (equal (org-toc-flush-subheadings "* About\n" 2)
+                 "* About\n"))
+
+  (should (equal (org-toc-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 0)
+                 ""))
+  (should (equal (org-toc-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 1)
+                 "* About\n* Installation\n* Use\n* Different href styles\n* Example\n"))
+  (should (equal (org-toc-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 2)
+                 "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n"))
+  (should (equal (org-toc-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 3)
+                 "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n")))
 
 (defun org-toc-insert-toc ()
   "Looks for a headline with the TOC tag and updates it with the
