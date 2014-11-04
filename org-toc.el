@@ -277,5 +277,9 @@ following tag formats:
   "Enable org-toc in this buffer."
   (add-hook 'before-save-hook 'org-toc-insert-toc nil t))
 
+;; Local Variables:
+;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit"
+;; End:
+
 (provide 'org-toc)
 ;;; org-toc.el ends here
