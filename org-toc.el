@@ -277,7 +277,7 @@ following tag formats:
   (add-hook 'before-save-hook 'org-toc-insert-toc nil t))
 
 ;; Local Variables:
-;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed '/^Wrote.*\.elc$/d' | xargs -r ls"
+;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
 ;; End:
 
 (provide 'org-toc)
