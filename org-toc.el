@@ -106,6 +106,7 @@ tags."
                (insert content)
                (org-toc-raw-toc))
              gold)))
+  (declare-function org-toc-test-raw-toc-gold-test "org-toc") ;; suppress compiler warning
 
   (let ((beg "* About\n:TOC:\n drawer\n:END:\n\norg-toc is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     ")
         (gold "* About\n"))
@@ -276,7 +277,7 @@ following tag formats:
   (add-hook 'before-save-hook 'org-toc-insert-toc nil t))
 
 ;; Local Variables:
-;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit"
+;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed '/^Wrote.*\.elc$/d' | xargs -r ls"
 ;; End:
 
 (provide 'org-toc)
