@@ -27,7 +27,7 @@ Emacs 24.1) you can simply use =M-x package-install= after setting up the [[http
 repository and then put the following snippet in your ~/.emacs file
 
 #+BEGIN_SRC elisp
-  (if (require 'org-toc-2 nil t)
+  (if (require 'org-toc nil t)
       (add-hook 'org-mode-hook 'org-toc-enable)
     (warn "org-toc not found"))
 #+END_SRC
@@ -42,7 +42,7 @@ repository and then put the following snippet in your ~/.emacs file
 - Put this in your ~/.emacs file
   #+BEGIN_SRC elisp
     (add-to-list 'load-path "~/.emacs.d/org-toc")
-    (if (require 'org-toc-2 nil t)
+    (if (require 'org-toc nil t)
         (add-hook 'org-mode-hook 'org-toc-enable)
       (warn "org-toc not found"))
   #+END_SRC
@@ -50,13 +50,7 @@ repository and then put the following snippet in your ~/.emacs file
 ** Potential name conflict
 
 If you install =contrib= Org modules, you may face a name conflict, since
-there's a package with the same name there. /Current/ package provides both
-=org-toc= and =org-toc-2= features to require. So, you should, probably, use the
-latter to avoid potential conflicts. The former is provided for backward
-compatibility.
-
-There still might be issues with autoloading in case both packages are
-installed. But those should be easy to workaround (e.g. don't use autoloads).
+there's a package with the same name there.
 
 * Use
 
