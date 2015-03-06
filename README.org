@@ -12,6 +12,7 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
  - [[#installation][Installation]]
      - [[#via-packageel][via package.el]]
      - [[#manual][Manual]]
+     - [[#potential-name-conflict][Potential name conflict]]
  - [[#use][Use]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
@@ -24,14 +25,15 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
 This is the simplest method if you have the package.el module (built-in since
 Emacs 24.1) you can simply use =M-x package-install= after setting up the [[http://melpa.org/#/getting-started][MELPA]]
 repository and then put the following snippet in your ~/.emacs file
+
 #+BEGIN_SRC elisp
-  (eval-after-load "org-toc-autoloads"
-    '(progn
-       (if (require 'org-toc nil t)
-           (add-hook 'org-mode-hook 'org-toc-enable)
-         (warn "org-toc not found"))))
+  (if (require 'org-toc-2 nil t)
+      (add-hook 'org-mode-hook 'org-toc-enable)
+    (warn "org-toc not found"))
 #+END_SRC
+
 ** Manual
+
 - Create folder ~/.emacs.d if you don't have it
 - Go to it and clone org-toc there
   #+BEGIN_SRC sh
@@ -40,9 +42,21 @@ repository and then put the following snippet in your ~/.emacs file
 - Put this in your ~/.emacs file
   #+BEGIN_SRC elisp
     (add-to-list 'load-path "~/.emacs.d/org-toc")
-    (when (require 'org-toc nil t)
-      (add-hook 'org-mode-hook 'org-toc-enable))
+    (if (require 'org-toc-2 nil t)
+        (add-hook 'org-mode-hook 'org-toc-enable)
+      (warn "org-toc not found"))
   #+END_SRC
+
+** Potential name conflict
+
+If you install =contrib= Org modules, you may face a name conflict, since
+there's a package with the same name there. /Current/ package provides both
+=org-toc= and =org-toc-2= features to require. So, you should, probably, use the
+latter to avoid potential conflicts. The former is provided for backward
+compatibility.
+
+There still might be issues with autoloading in case both packages are
+installed. But those should be easy to workaround (e.g. don't use autoloads).
 
 * Use
 
@@ -66,10 +80,12 @@ formats:
 You can also use =@= as separator, instead of =_=.
 
 *Note* In your emacs' setup, you can bind a tag =:TOC:= to a binding =T=:
-#+begin_src emacs-lisp
-(add-to-list 'org-tag-alist '("TOC" . ?T))
-#+end_src
-Now `C-c C-q T RET` and you are done putting the =:TOC:= entry.
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'org-tag-alist '("TOC" . ?T))
+#+END_SRC
+
+Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
 
 * Different href styles
 

@@ -280,5 +280,6 @@ following tag formats:
 ;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
 ;; End:
 
+(provide 'org-toc-2)
 (provide 'org-toc)
 ;;; org-toc.el ends here
