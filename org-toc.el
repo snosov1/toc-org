@@ -29,11 +29,9 @@
 
 ;; After installation put into your .emacs file something like
 
-;; (eval-after-load "org-toc-autoloads"
-;;   '(progn
-;;      (if (require 'org-toc nil t)
-;;          (add-hook 'org-mode-hook 'org-toc-enable)
-;;        (warn "org-toc not found"))))
+;; (if (require 'org-toc-2 nil t)
+;;     (add-hook 'org-mode-hook 'org-toc-enable)
+;;   (warn "org-toc not found"))
 
 ;; And every time you'll be saving an org file, the first headline with a :TOC:
 ;; tag will be updated with the current table of contents.
