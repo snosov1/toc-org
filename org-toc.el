@@ -29,7 +29,7 @@
 
 ;; After installation put into your .emacs file something like
 
-;; (if (require 'org-toc-2 nil t)
+;; (if (require 'org-toc nil t)
 ;;     (add-hook 'org-mode-hook 'org-toc-enable)
 ;;   (warn "org-toc not found"))
 
