@@ -1,5 +1,7 @@
 [[https://travis-ci.org/snosov1/org-toc][file:https://api.travis-ci.org/snosov1/org-toc.svg?branch=master]]
 
+#+TITLE: NOTE: The package was renamed to toc-org and moved to https://github.com/snosov1/toc-org Please, update your configuration files!
+
 * About
 
 org-toc helps you to have an up-to-date table of contents in org files without
