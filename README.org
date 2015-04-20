@@ -7,6 +7,9 @@ exporting (useful primarily for readme files on GitHub).
 
 It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.
 
+Previous name of the package is =org-toc=. It was change because of a name
+conflict with one of the org contrib modules.
+
 * Table of Contents                                                     :TOC:
  - [[#about][About]]
  - [[#installation][Installation]]
