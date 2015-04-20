@@ -1,10 +1,8 @@
-[[https://travis-ci.org/snosov1/org-toc][file:https://api.travis-ci.org/snosov1/org-toc.svg?branch=master]]
-
-#+TITLE: NOTE: The package was renamed to toc-org and moved to https://github.com/snosov1/toc-org Please, update your configuration files!
+[[https://travis-ci.org/snosov1/toc-org][file:https://api.travis-ci.org/snosov1/toc-org.svg?branch=master]]
 
 * About
 
-org-toc helps you to have an up-to-date table of contents in org files without
+toc-org helps you to have an up-to-date table of contents in org files without
 exporting (useful primarily for readme files on GitHub).
 
 It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.
@@ -14,7 +12,6 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
  - [[#installation][Installation]]
      - [[#via-packageel][via package.el]]
      - [[#manual][Manual]]
-     - [[#potential-name-conflict][Potential name conflict]]
  - [[#use][Use]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
@@ -29,30 +26,25 @@ Emacs 24.1) you can simply use =M-x package-install= after setting up the [[http
 repository and then put the following snippet in your ~/.emacs file
 
 #+BEGIN_SRC elisp
-  (if (require 'org-toc nil t)
-      (add-hook 'org-mode-hook 'org-toc-enable)
-    (warn "org-toc not found"))
+  (if (require 'toc-org nil t)
+      (add-hook 'org-mode-hook 'toc-org-enable)
+    (warn "toc-org not found"))
 #+END_SRC
 
 ** Manual
 
 - Create folder ~/.emacs.d if you don't have it
-- Go to it and clone org-toc there
+- Go to it and clone toc-org there
   #+BEGIN_SRC sh
-    git clone https://github.com/snosov1/org-toc.git
+    git clone https://github.com/snosov1/toc-org.git
   #+END_SRC
 - Put this in your ~/.emacs file
   #+BEGIN_SRC elisp
-    (add-to-list 'load-path "~/.emacs.d/org-toc")
-    (if (require 'org-toc nil t)
-        (add-hook 'org-mode-hook 'org-toc-enable)
-      (warn "org-toc not found"))
+    (add-to-list 'load-path "~/.emacs.d/toc-org")
+    (if (require 'toc-org nil t)
+        (add-hook 'org-mode-hook 'toc-org-enable)
+      (warn "toc-org not found"))
   #+END_SRC
-
-** Potential name conflict
-
-If you install =contrib= Org modules, you may face a name conflict, since
-there's a package with the same name there.
 
 * Use
 
@@ -88,13 +80,13 @@ Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
 Currently, only 2 href styles are supported: =gh= and =org=. You can easily
 define your own styles. If you use the tag =:TOC_2_STYLE:= (=STYLE= being a
 style name), then the package will look for a function named
-=org-toc-hrefify-STYLE=, which accepts a heading string and returns a href
+=toc-org-hrefify-STYLE=, which accepts a heading string and returns a href
 corresponding to that heading.
 
 E.g. for =org= style it simply returns input as is:
 
 #+BEGIN_SRC emacs-lisp
-  (defun org-toc-hrefify-org (str)
+  (defun toc-org-hrefify-org (str)
     "Given a heading, transform it into a href using the org-mode
   rules."
     str)
