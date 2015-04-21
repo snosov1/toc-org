@@ -22,7 +22,7 @@ name conflict with one of the org contrib modules.
 * Installation
 ** via package.el
 
-[[http://melpa.org/#/org-toc][file:http://melpa.org/packages/org-toc-badge.svg]]
+[[http://melpa.org/#/toc-org][file:http://melpa.org/packages/toc-org-badge.svg]]
 
 This is the simplest method if you have the package.el module (built-in since
 Emacs 24.1) you can simply use =M-x package-install= after setting up the [[http://melpa.org/#/getting-started][MELPA]]
