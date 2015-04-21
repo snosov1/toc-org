@@ -1,4 +1,4 @@
-;;; toc-org.el --- add table of contents to org-mode files
+;;; toc-org.el --- add table of contents to org-mode files (formerly, org-toc)
 
 ;; Copyright (C) 2014 Sergei Nosov
 
