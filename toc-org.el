@@ -4,7 +4,7 @@
 
 ;; Author: Sergei Nosov <sergei.nosov [at] gmail.com>
 ;; Version: 1.0
-;; Keywords: org-mode org toc table of contents
+;; Keywords: org-mode org-toc toc-org org toc table of contents
 ;; URL: https://github.com/snosov1/toc-org
 
 ;; This program is free software; you can redistribute it and/or
