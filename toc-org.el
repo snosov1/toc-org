@@ -70,6 +70,16 @@ and their subheadings (one and two stars)."
   "Default hrefify function to use."
   :group 'toc-org)
 
+(defcustom toc-org-enable-links-opening t
+  "With this option, org-open-at-point (C-c C-o) should work on
+the TOC links (even if the style is different from org)."
+  :group 'toc-org)
+
+(defvar-local toc-org-hrefify-hash nil
+  "Buffer local hash-table that is used to enable links
+opening. The keys are hrefified headings, the values are original
+headings.")
+
 (defun toc-org-raw-toc ()
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading and strip
@@ -148,7 +158,22 @@ rules."
 rules."
   str)
 
-(defun toc-org-hrefify-toc (toc hrefify)
+(defun toc-org-unhrefify (type path)
+  "Looks for a value in toc-org-hrefify-hash using path as a key."
+  (let ((ret-path path))
+    (when (and toc-org-enable-links-opening
+               (not (eq toc-org-hrefify-hash nil))
+               (equal type "thisfile"))
+      (setq ret-path
+            (or
+             (gethash
+              (substring-no-properties path)
+              toc-org-hrefify-hash
+              nil)
+             path)))
+    (cons type ret-path)))
+
+(defun toc-org-hrefify-toc (toc hrefify &optional hash)
   "Format the raw `toc' using the `hrefify' function to transform
 each heading into a link."
   (with-temp-buffer
@@ -170,22 +195,37 @@ each heading into a link."
             (let* ((beg (point))
                    (end (line-end-position))
                    (heading (buffer-substring-no-properties
-                             beg end)))
+                             beg end))
+                   (hrefified (funcall hrefify heading)))
               (insert "[[")
-              (insert (funcall hrefify heading))
+              (insert hrefified)
               (insert "][")
               (end-of-line)
-              (insert "]]"))
+              (insert "]]")
+
+              ;; maintain the hash table, if provided
+              (when hash
+                (puthash hrefified heading hash)))
             (= 0 (forward-line 1)))))
 
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
 (ert-deftest toc-org-test-hrefify-toc ()
-  (should (equal (toc-org-hrefify-toc "* About\n" 'upcase)
-                 " - [[ABOUT][About]]\n"))
-  (should (equal (toc-org-hrefify-toc "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 'upcase)
-                 " - [[ABOUT][About]]\n - [[INSTALLATION][Installation]]\n     - [[VIA PACKAGE.EL][via package.el]]\n     - [[MANUAL][Manual]]\n - [[USE][Use]]\n - [[DIFFERENT HREF STYLES][Different href styles]]\n - [[EXAMPLE][Example]]\n")))
+  (let ((hash (make-hash-table :test 'equal)))
+    (should (equal (toc-org-hrefify-toc "* About\n" 'upcase hash)
+                   " - [[ABOUT][About]]\n"))
+    (should (equal (gethash "ABOUT" hash) "About")))
+  (let ((hash (make-hash-table :test 'equal)))
+    (should (equal (toc-org-hrefify-toc "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 'upcase hash)
+                   " - [[ABOUT][About]]\n - [[INSTALLATION][Installation]]\n     - [[VIA PACKAGE.EL][via package.el]]\n     - [[MANUAL][Manual]]\n - [[USE][Use]]\n - [[DIFFERENT HREF STYLES][Different href styles]]\n - [[EXAMPLE][Example]]\n"))
+    (should (equal (gethash "ABOUT" hash) "About"))
+    (should (equal (gethash "INSTALLATION" hash) "Installation"))
+    (should (equal (gethash "VIA PACKAGE.EL" hash) "via package.el"))
+    (should (equal (gethash "MANUAL" hash) "Manual"))
+    (should (equal (gethash "USE" hash) "Use"))
+    (should (equal (gethash "DIFFERENT HREF STYLES" hash) "Different href styles"))
+    (should (equal (gethash "EXAMPLE" hash) "Example"))))
 
 (defun toc-org-flush-subheadings (toc max-depth)
   "Flush subheadings of the raw `toc' deeper than `max-depth'."
@@ -223,18 +263,18 @@ each heading into a link."
 current table of contents.
 
 To add a TOC tag, you can use the command
-`org-set-tags-command'.
+`org-set-tags-command' (C-c C-q).
 
 In addition to the simple :TOC: tag, you can also use the
 following tag formats:
 
-- :TOC@2: - sets the max depth of the headlines in the table of
+- :TOC_2: - sets the max depth of the headlines in the table of
   contents to 2 (the default)
 
-- :TOC@2@gh: - sets the max depth as in above and also uses the
-  GitHub-style hrefs in the table of contents (the default). The
-  other supported href style is 'org', which is the default org
-  style (you can use C-c C-o to go to the headline at point)."
+- :TOC_2_gh: - sets the max depth as in above and also uses the
+  GitHub-style hrefs in the table of contents (this style is
+  default). The other supported href style is 'org', which is the
+  default org style."
 
   (interactive)
   (when (eq major-mode 'org-mode)
@@ -243,6 +283,9 @@ following tag formats:
       (let ((case-fold-search t))
         ;; find the first heading with the :TOC: tag
         (when (re-search-forward toc-org-toc-org-regexp (point-max) t)
+
+          ;; make toc visible
+          (org-show-entry)
 
           (let* ((tag (match-string 1))
                  (depth (if tag
@@ -269,13 +312,27 @@ following tag formats:
                                    (end-of-line)
                                    (point)))
 
-                  (insert (toc-org-hrefify-toc (toc-org-flush-subheadings (toc-org-raw-toc) depth) hrefify)))
+                  (insert (toc-org-hrefify-toc
+                           (toc-org-flush-subheadings (toc-org-raw-toc) depth)
+                           hrefify
+                           (when toc-org-hrefify-hash
+                             (clrhash toc-org-hrefify-hash)))))
               (message (concat "Hrefify function " hrefify-string " is not found")))))))))
 
 ;;;###autoload
 (defun toc-org-enable ()
   "Enable toc-org in this buffer."
-  (add-hook 'before-save-hook 'toc-org-insert-toc nil t))
+  (add-hook 'before-save-hook 'toc-org-insert-toc nil t)
+
+  ;; conservatively set org-link-translation-function
+  (when (and (equal toc-org-enable-links-opening t)
+             (or
+              (not (fboundp org-link-translation-function))
+              (equal org-link-translation-function 'toc-org-unhrefify)))
+    (setq toc-org-hrefify-hash (make-hash-table :test 'equal))
+    (setq org-link-translation-function 'toc-org-unhrefify)
+    (toc-org-insert-toc)
+    (save-buffer)))
 
 ;; Local Variables:
 ;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"

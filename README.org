@@ -16,6 +16,8 @@ name conflict with one of the org contrib modules.
      - [[#via-packageel][via package.el]]
      - [[#manual][Manual]]
  - [[#use][Use]]
+     - [[#follow-links][Follow links]]
+     - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
 
@@ -54,23 +56,34 @@ repository and then put the following snippet in your ~/.emacs file
 After the installation, every time you'll be saving an org file, the first
 headline with a =:TOC:= tag will be updated with the current table of contents.
 
-To add a =:TOC:= tag, you can use the command =org-set-tags-command=, normally
-found bound to =C-c C-q=.
+To add a TOC tag, you can use the command =org-set-tags-command= (=C-c C-q=).
 
-In addition to the simple =:TOC:= tag, you can also use the following tag
-formats:
+In addition to the simple :TOC: tag, you can also use the following tag formats:
 
-- =:TOC_2:= - sets the max depth of the headlines in the table of contents to 2
+- :TOC_2: - sets the max depth of the headlines in the table of contents to 2
   (the default)
 
-- =:TOC_2_gh:= - sets the max depth as in above and also uses the GitHub-style
-  hrefs in the table of contents (the default). The other supported href style
-  is 'org', which is the default org style (you can use =C-c C-o= to go to the
-  headline at point).
+- :TOC_2_gh: - sets the max depth as in above and also uses the GitHub-style
+  hrefs in the table of contents (this style is default). The other supported
+  href style is 'org', which is the default org style.
 
 You can also use =@= as separator, instead of =_=.
 
-*Note* In your emacs' setup, you can bind a tag =:TOC:= to a binding =T=:
+** Follow links
+
+If you call =M-x org-open-at-point= (=C-c C-o=) when you're at a TOC entry, the
+point will jump to the corresponding heading.
+
+Notice, that this functionality exploits the =org-link-translation-function=
+variable. So, it won't work if you use this variable for other purposes (i.e. it
+is not nil).
+
+You can manually disable this functionality by setting
+=toc-org-enable-links-opening= to nil.
+
+** Shortcut for TOC tag
+
+In your emacs' setup, you can bind a tag =:TOC:= to a binding =T=:
 
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'org-tag-alist '("TOC" . ?T))
