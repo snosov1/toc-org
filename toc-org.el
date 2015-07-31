@@ -44,6 +44,7 @@
 ;;; Code:
 
 (require 'ert)
+(require 'org)
 
 (defgroup toc-org nil
   "toc-org is a utility to have an up-to-date table of contents
