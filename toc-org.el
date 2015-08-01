@@ -272,9 +272,13 @@ each heading into a link."
   (should (equal (toc-org-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 3)
                  "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n")))
 
-(defun toc-org-insert-toc ()
+(defun toc-org-insert-toc (&optional dry-run)
   "Looks for a headline with the TOC tag and updates it with the
 current table of contents.
+
+If optional second argument DRY-RUN is provided, then the buffer
+is not modified at all. Only the internal hash-table is updated
+to enable `org-open-at-point' for TOC links.
 
 To add a TOC tag, you can use the command
 `org-set-tags-command' (C-c C-q).
@@ -297,11 +301,6 @@ following tag formats:
       (let ((case-fold-search t))
         ;; find the first heading with the :TOC: tag
         (when (re-search-forward toc-org-toc-org-regexp (point-max) t)
-
-          ;; make toc visible
-          (save-match-data
-            (org-show-entry))
-
           (let* ((tag (match-string 1))
                  (depth (if tag
                             (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
@@ -312,26 +311,27 @@ following tag formats:
                  (hrefify-string (concat "toc-org-hrefify-" hrefify-tag))
                  (hrefify (intern-soft hrefify-string)))
             (if hrefify
-                (progn
-                  (newline (forward-line 1))
+                (let ((new-toc
+                       (toc-org-hrefify-toc
+                        (toc-org-flush-subheadings (toc-org-raw-toc) depth)
+                        hrefify
+                        (when toc-org-hrefify-hash
+                          (clrhash toc-org-hrefify-hash)))))
+                  (unless dry-run
+                    (newline (forward-line 1))
 
-                  ;; insert newline if TOC is currently empty
-                  (when (looking-at "^\\*")
-                    (open-line 1))
+                    ;; insert newline if TOC is currently empty
+                    (when (looking-at "^\\*")
+                      (open-line 1))
 
-                  ;; remove previous TOC
-                  (delete-region (point)
-                                 (save-excursion
-                                   (when (search-forward-regexp "^\\*" (point-max) t)
-                                     (forward-line -1))
-                                   (end-of-line)
-                                   (point)))
-
-                  (insert (toc-org-hrefify-toc
-                           (toc-org-flush-subheadings (toc-org-raw-toc) depth)
-                           hrefify
-                           (when toc-org-hrefify-hash
-                             (clrhash toc-org-hrefify-hash)))))
+                    ;; remove previous TOC
+                    (delete-region (point)
+                                   (save-excursion
+                                     (when (search-forward-regexp "^\\*" (point-max) t)
+                                       (forward-line -1))
+                                     (end-of-line)
+                                     (point)))
+                    (insert new-toc)))
               (message (concat "Hrefify function " hrefify-string " is not found")))))))))
 
 ;;;###autoload
@@ -346,8 +346,7 @@ following tag formats:
               (equal org-link-translation-function 'toc-org-unhrefify)))
     (setq toc-org-hrefify-hash (make-hash-table :test 'equal))
     (setq org-link-translation-function 'toc-org-unhrefify)
-    (toc-org-insert-toc)
-    (save-buffer)))
+    (toc-org-insert-toc t)))
 
 (ert-deftest toc-org-test-insert-toc ()
   "Test the `toc-org-insert-toc' function"
