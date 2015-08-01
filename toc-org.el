@@ -59,6 +59,8 @@ files on GitHub)"
   "Regexp to find tags on the line")
 (defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
   "Regexp to find states on the line")
+(defconst toc-org-links-regexp "\\[\\[\\(.*?\\)\\]\\[\\(.*?\\)\\]\\]"
+  "Regexp to find states on the line")
 (defconst toc-org-special-chars-regexp "[][~`!@#$%^&*()+={}|\:;\"'<,>.?/]"
   "Regexp with the special characters (which are omitted in hrefs
   by GitHub)")
@@ -106,12 +108,16 @@ tags."
         (replace-match "" nil nil nil 1))
 
       ;; strip tags
-
       ;; TODO :export: and :noexport: tags semantic should be probably
       ;; implemented
       (goto-char (point-min))
       (while (re-search-forward toc-org-tags-regexp nil t)
         (replace-match "" nil nil))
+
+      ;; flatten links
+      (goto-char (point-min))
+      (while (re-search-forward toc-org-links-regexp nil t)
+        (replace-match "\\2" nil nil))
 
       (buffer-substring-no-properties
        (point-min) (point-max)))))
@@ -127,7 +133,7 @@ tags."
              gold)))
   (declare-function toc-org-test-raw-toc-gold-test "toc-org") ;; suppress compiler warning
 
-  (let ((beg "* TODO About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     ")
+  (let ((beg "* TODO [[http://somewhere.com][About]]\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     ")
         (gold "* About\n"))
 
     ;; different TOC styles
