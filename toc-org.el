@@ -94,7 +94,7 @@ tags."
 
       ;; don't include the TOC itself
       (goto-char (point-min))
-      (re-search-forward toc-org-toc-org-regexp)
+      (re-search-forward toc-org-toc-org-regexp nil t)
       (beginning-of-line)
       (delete-region (point) (progn (forward-line 1) (point)))
 
@@ -286,7 +286,8 @@ following tag formats:
         (when (re-search-forward toc-org-toc-org-regexp (point-max) t)
 
           ;; make toc visible
-          (org-show-entry)
+          (save-match-data
+            (org-show-entry))
 
           (let* ((tag (match-string 1))
                  (depth (if tag
@@ -299,7 +300,7 @@ following tag formats:
                  (hrefify (intern-soft hrefify-string)))
             (if hrefify
                 (progn
-                  (forward-line 1)
+                  (newline (forward-line 1))
 
                   ;; insert newline if TOC is currently empty
                   (when (looking-at "^\\*")
@@ -308,8 +309,8 @@ following tag formats:
                   ;; remove previous TOC
                   (delete-region (point)
                                  (save-excursion
-                                   (search-forward-regexp "^\\*" (point-max) 0)
-                                   (forward-line -1)
+                                   (when (search-forward-regexp "^\\*" (point-max) t)
+                                     (forward-line -1))
                                    (end-of-line)
                                    (point)))
 
@@ -334,6 +335,42 @@ following tag formats:
     (setq org-link-translation-function 'toc-org-unhrefify)
     (toc-org-insert-toc)
     (save-buffer)))
+
+(ert-deftest toc-org-test-insert-toc ()
+  "Test the `toc-org-insert-toc' function"
+
+  (defun toc-org-test-insert-toc-gold-test (content gold)
+    (with-temp-buffer
+      (org-mode)
+      (insert content)
+      (toc-org-raw-toc)
+      (toc-org-insert-toc)
+      (should (equal
+               (buffer-substring-no-properties
+                (point-min) (point-max))
+               gold))))
+  (declare-function toc-org-test-insert-toc-gold-test "toc-org") ;; suppress compiler warning
+
+  (let ((beg "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     "))
+    (toc-org-test-insert-toc-gold-test
+     (concat beg ":TOC:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#hello][Hello]]\n     - [[#good-bye][Good-bye]]\n")
+
+    (toc-org-test-insert-toc-gold-test
+     (concat beg ":TOC_1:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1:\n - [[#about][About]]\n - [[#hello][Hello]]\n")
+
+    (toc-org-test-insert-toc-gold-test
+     (concat beg ":TOC_3:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3:\n - [[#about][About]]\n - [[#hello][Hello]]\n     - [[#good-bye][Good-bye]]\n         - [[#salut][Salut]]\n")
+
+    (toc-org-test-insert-toc-gold-test
+     (concat beg ":TOC_1_org:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1_org:\n - [[About][About]]\n - [[Hello][Hello]]\n")
+
+    (toc-org-test-insert-toc-gold-test
+     (concat beg ":TOC_3_org:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n - [[About][About]]\n - [[Hello][Hello]]\n     - [[Good-bye][Good-bye]]\n         - [[Salut][Salut]]\n")))
 
 ;; Local Variables:
 ;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
