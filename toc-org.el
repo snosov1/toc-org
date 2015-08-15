@@ -201,7 +201,9 @@ each heading into a link."
 
             (while (looking-at "\\*")
               (delete-char 1)
-              (insert "    "))
+              ;; NOTE: a dash and a space are two characters, so Org
+              ;; uses this value for the base indentation
+              (insert (make-string (+ 2 org-list-indent-offset) ?\s)))
 
             (skip-chars-forward " ")
             (insert "- ")
