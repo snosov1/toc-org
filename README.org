@@ -13,11 +13,11 @@ name conflict with one of the org contrib modules.
 * Table of Contents                                                     :TOC:
  - [[#about][About]]
  - [[#installation][Installation]]
-     - [[#via-packageel][via package.el]]
-     - [[#manual][Manual]]
+   - [[#via-packageel][via package.el]]
+   - [[#manual][Manual]]
  - [[#use][Use]]
-     - [[#follow-links][Follow links]]
-     - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
+   - [[#follow-links][Follow links]]
+   - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
 
