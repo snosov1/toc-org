@@ -174,24 +174,26 @@ rules."
 
 (defun toc-org-unhrefify (type path)
   "Looks for a value in toc-org-hrefify-hash using path as a key."
-  (let ((ret-path path))
-    (when (and toc-org-enable-links-opening
-               (not (eq toc-org-hrefify-hash nil))
-               ;; Org 8.2 and below provides type as "thisfile"
-               (or (equal type "thisfile")
-                   ;; Org 8.3 and above provides type as "custom-id" and strips
-                   ;; the leading hash symbol
-                   (and (equal type "custom-id")
-                        (setq type "fuzzy")
-                        (setq path (concat "#" path)))))
-      (setq ret-path
-            (or
-             (gethash
-              (substring-no-properties path)
-              toc-org-hrefify-hash
-              nil)
-             path)))
-    (cons type ret-path)))
+  (let ((ret-type type)
+        (ret-path path)
+        (original-path (and (not (eq toc-org-hrefify-hash nil))
+                            (gethash
+                             (concat
+                              ;; Org 8.3 and above provides type as "custom-id"
+                              ;; and strips the leading hash symbol
+                              (if (equal type "custom-id") "#" "")
+                              (substring-no-properties path))
+                             toc-org-hrefify-hash
+                             nil))))
+    (when toc-org-enable-links-opening
+      (when original-path
+        ;; Org 8.2 and below provides type as "thisfile"
+        (when (equal type "thisfile")
+          (setq ret-path original-path))
+        (when (equal type "custom-id")
+          (setq ret-type "fuzzy")
+          (setq ret-path original-path))))
+    (cons ret-type ret-path)))
 
 (defun toc-org-hrefify-toc (toc hrefify &optional hash)
   "Format the raw `toc' using the `hrefify' function to transform
