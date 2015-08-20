@@ -177,7 +177,13 @@ rules."
   (let ((ret-path path))
     (when (and toc-org-enable-links-opening
                (not (eq toc-org-hrefify-hash nil))
-               (equal type "thisfile"))
+               ;; Org 8.2 and below provides type as "thisfile"
+               (or (equal type "thisfile")
+                   ;; Org 8.3 and above provides type as "custom-id" and strips
+                   ;; the leading hash symbol
+                   (and (equal type "custom-id")
+                        (setq type "fuzzy")
+                        (setq path (concat "#" path)))))
       (setq ret-path
             (or
              (gethash
