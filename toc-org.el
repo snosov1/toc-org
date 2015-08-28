@@ -282,6 +282,37 @@ each heading into a link."
   (should (equal (toc-org-flush-subheadings "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" 3)
                  "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n")))
 
+(defun toc-org-heading-folded-p ()
+  "Non-nil when heading at point is (partially) folded."
+  (save-excursion
+    (org-back-to-heading)
+    (let ((headline-end (line-end-position))
+          (next-headline (save-excursion (org-end-of-subtree t t)))
+          (pos (point))
+          positions)
+      ;; scan between the end of the headline and end of the subtree
+      ;; for invisible text
+      (while (< pos next-headline)
+        (setq pos (next-single-char-property-change pos 'invisible
+                                                    nil next-headline))
+        ;; if the invisible text is a folded outline, append to results
+        (when (eq (get-char-property pos 'invisible) 'outline)
+          (push pos positions)))
+      positions)))
+
+(ert-deftest toc-org-test-heading-folded-p ()
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Foo\nA foo foos\n** Bar\nA bar bars\n** Baz\nBut a baz buzzes")
+    (goto-char (point-min))
+    (should-not (toc-org-heading-folded-p))
+    (org-cycle)
+    (should (toc-org-heading-folded-p))
+    (org-cycle)
+    (should (toc-org-heading-folded-p))
+    (org-cycle)
+    (should-not (toc-org-heading-folded-p))))
+
 (defun toc-org-insert-toc (&optional dry-run)
   "Looks for a headline with the TOC tag and updates it with the
 current table of contents.
@@ -308,10 +339,13 @@ following tag formats:
   (when (eq major-mode 'org-mode)
     (save-excursion
       (goto-char (point-min))
-      (let ((case-fold-search t))
+      (let* ((case-fold-search t)
+             (toc-heading (re-search-forward toc-org-toc-org-regexp
+                                             (point-max) t)))
         ;; find the first heading with the :TOC: tag
-        (when (re-search-forward toc-org-toc-org-regexp (point-max) t)
+        (when toc-heading
           (let* ((tag (match-string 1))
+                 (was-folded (toc-org-heading-folded-p))
                  (depth (if tag
                             (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
                           toc-org-max-depth))
@@ -341,7 +375,13 @@ following tag formats:
                                        (forward-line -1))
                                      (end-of-line)
                                      (point)))
-                    (insert new-toc)))
+                    (insert new-toc)
+                    (when was-folded
+                      ;; return to previous folding state by
+                      ;; visiting the heading and cycling twice
+                      (goto-char toc-heading)
+                      (org-cycle)
+                      (org-cycle))))
               (message (concat "Hrefify function " hrefify-string " is not found")))))))))
 
 ;;;###autoload
