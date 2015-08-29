@@ -156,13 +156,15 @@ tags."
 (defun toc-org-hrefify-gh (str)
   "Given a heading, transform it into a href using the GitHub
 rules."
-  (let* ((spc-fix (replace-regexp-in-string " " "-" str))
+  (let* ((bracket-fix (replace-regexp-in-string org-bracket-link-regexp "\\3" str))
+         (spc-fix (replace-regexp-in-string " " "-" bracket-fix))
          (upcase-fix (replace-regexp-in-string "[A-Z]" 'downcase spc-fix t))
          (special-chars-fix (replace-regexp-in-string toc-org-special-chars-regexp "" upcase-fix t)))
     (concat "#" special-chars-fix)))
 
 (ert-deftest toc-org-test-hrefify-gh ()
   "Test the `toc-org-hrefify-gh' function"
+  (should (equal (toc-org-hrefify-gh "[[http://example.org][Example]]") "#example"))
   (should (equal (toc-org-hrefify-gh "About") "#about"))
   (should (equal (toc-org-hrefify-gh "!h@#$%^&*(){}|][:;\"'/?.>,<`~") "#h"))
   (should (equal (toc-org-hrefify-gh "!h@#$% ^&*(S){}|][:;\"'/?.>,<`~") "#h-s")))
