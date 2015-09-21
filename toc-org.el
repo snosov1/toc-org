@@ -334,14 +334,21 @@ following tag formats:
                     (when (looking-at "^\\*")
                       (open-line 1))
 
-                    ;; remove previous TOC
-                    (delete-region (point)
-                                   (save-excursion
-                                     (when (search-forward-regexp "^\\*" (point-max) t)
-                                       (forward-line -1))
-                                     (end-of-line)
-                                     (point)))
-                    (insert new-toc)))
+                    ;; find TOC boundaries
+                    (let ((beg (point))
+                          (end
+                           (save-excursion
+                             (when (search-forward-regexp "^\\*" (point-max) t)
+                               (forward-line -1))
+                             (end-of-line)
+                             (point))))
+                      ;; update the TOC, but only if it's actually different
+                      ;; from the current one
+                      (unless (equal
+                               (buffer-substring-no-properties beg end)
+                               new-toc)
+                        (delete-region beg end)
+                        (insert new-toc)))))
               (message (concat "Hrefify function " hrefify-string " is not found")))))))))
 
 ;;;###autoload
