@@ -61,7 +61,7 @@ files on GitHub)"
   "Regexp to find states on the line")
 (defconst toc-org-links-regexp "\\[\\[\\(.*?\\)\\]\\[\\(.*?\\)\\]\\]"
   "Regexp to find states on the line")
-(defconst toc-org-special-chars-regexp "[][~`!@#$%^&*()+={}|\:;\"'<,>.?/]"
+(defconst toc-org-special-chars-regexp "[^[:alnum:]_-]"
   "Regexp with the special characters (which are omitted in hrefs
   by GitHub)")
 
