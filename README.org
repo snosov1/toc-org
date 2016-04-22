@@ -96,13 +96,17 @@ Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
 Currently, only 2 href styles are supported: =gh= and =org=. You can easily
 define your own styles. If you use the tag =:TOC_2_STYLE:= (=STYLE= being a
 style name), then the package will look for a function named
-=toc-org-hrefify-STYLE=, which accepts a heading string and returns a href
-corresponding to that heading.
+=toc-org-hrefify-STYLE=.
+
+It should accept a heading string and a hash table of previously generated
+hrefs. The table can be used to maintain href uniqueness (see
+=toc-org-hrefify-gh=, for example). Return value should be a href corresponding
+to that heading.
 
 E.g. for =org= style it simply returns input as is:
 
 #+BEGIN_SRC emacs-lisp
-  (defun toc-org-hrefify-org (str)
+  (defun toc-org-hrefify-org (str &optional hash)
     "Given a heading, transform it into a href using the org-mode
   rules."
     str)
