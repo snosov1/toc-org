@@ -59,6 +59,8 @@ files on GitHub)"
   "Regexp to find tags on the line")
 (defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
   "Regexp to find states on the line")
+(defconst toc-org-priorities-regexp "^*+\s+\\(\\[#.\\]\s+\\)"
+  "Regexp to find states on the line")
 (defconst toc-org-links-regexp "\\[\\[\\(.*?\\)\\]\\[\\(.*?\\)\\]\\]"
   "Regexp to find states on the line")
 (defconst toc-org-special-chars-regexp "[^[:alnum:]_-]"
@@ -88,7 +90,7 @@ headings.")
 (defun toc-org-raw-toc ()
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading and strip
-tags."
+auxiliary text."
   (let ((content (buffer-substring-no-properties
                   (point-min) (point-max))))
     (with-temp-buffer
@@ -107,6 +109,11 @@ tags."
       (while (re-search-forward toc-org-states-regexp nil t)
         (replace-match "" nil nil nil 1))
 
+      ;; strip priorities
+      (goto-char (point-min))
+      (while (re-search-forward toc-org-priorities-regexp nil t)
+        (replace-match "" nil nil nil 1))
+
       ;; strip tags
       ;; TODO :export: and :noexport: tags semantic should be probably
       ;; implemented
@@ -122,35 +129,35 @@ tags."
       (buffer-substring-no-properties
        (point-min) (point-max)))))
 
-(ert-deftest toc-org-test-raw-toc ()
+(ert-deftest test-toc-org-raw-toc ()
   "Test the `toc-org-raw-toc' function"
 
-  (defun toc-org-test-raw-toc-gold-test (content gold)
+  (defun test-toc-org-raw-toc-gold-test (content gold)
     (should (equal
              (with-temp-buffer
                (insert content)
                (toc-org-raw-toc))
              gold)))
-  (declare-function toc-org-test-raw-toc-gold-test "toc-org") ;; suppress compiler warning
+  (declare-function test-toc-org-raw-toc-gold-test "toc-org") ;; suppress compiler warning
 
   (let ((beg "* TODO [[http://somewhere.com][About]]\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     ")
         (gold "* About\n"))
 
     ;; different TOC styles
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC:"         ) gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC_1:"       ) gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC_1_qqq:"   ) gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC@1:"       ) gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC@1@cxv:"   ) gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC@1_hello:" ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC:"         ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC_1:"       ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC_1_qqq:"   ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC@1:"       ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC@1@cxv:"   ) gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC@1_hello:" ) gold)
 
     ;; trailing symbols
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC@1_hello:" "\n\n\n") gold)
-    (toc-org-test-raw-toc-gold-test (concat beg ":TOC@1_hello:" "\n\n\nsdfd") gold))
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC@1_hello:" "\n\n\n") gold)
+    (test-toc-org-raw-toc-gold-test (concat beg ":TOC@1_hello:" "\n\n\nsdfd") gold))
 
   ;; more complex case
-  (toc-org-test-raw-toc-gold-test
-   "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#use][Use]]\n - [[#different-href-styles][Different href styles]]\n - [[#example][Example]]\n\n* Installation\n** via package.el\nThis is the simplest method if you have the package.el module\n(built-in since Emacs 24.1) you can simply use =M-x package-install=\nand then put the following snippet in your ~/.emacs file\n#+BEGIN_SRC elisp\n  (eval-after-load \"toc-org-autoloads\"\n    '(progn\n       (if (require 'toc-org nil t)\n           (add-hook 'org-mode-hook 'toc-org-enable)\n         (warn \"toc-org not found\"))))\n#+END_SRC\n** Manual                                                             :Hello:\n- Create folder ~/.emacs.d if you don't have it\n- Go to it and clone toc-org there\n  #+BEGIN_SRC sh\n    git clone https://github.com/snosov1/toc-org.git\n  #+END_SRC\n- Put this in your ~/.emacs file\n  #+BEGIN_SRC elisp\n    (add-to-list 'load-path \"~/.emacs.d/toc-org\")\n    (when (require 'toc-org nil t)\n      (add-hook 'org-mode-hook 'toc-org-enable))\n  #+END_SRC\n\n* Use\n\nAfter the installation, every time you'll be saving an org file, the\nfirst headline with a :TOC: tag will be updated with the current table\nof contents.\n\nTo add a TOC tag, you can use the command =org-set-tags-command=.\n\nIn addition to the simple :TOC: tag, you can also use the following\ntag formats:\n\n- :TOC@2: - sets the max depth of the headlines in the table of\n  contents to 2 (the default)\n\n- :TOC@2@gh: - sets the max depth as in above and also uses the\n  GitHub-style hrefs in the table of contents (the default). The other\n  supported href style is 'org', which is the default org style (you\n  can use C-c C-o to go to the headline at point).\n\nYou can also use =_= as separator, instead of =@=.\n\n* Different href styles\n\nCurrently, only 2 href styles are supported: =gh= and =org=. You can easily\ndefine your own styles. If you use the tag =:TOC@2@STYLE:= (=STYLE= being a\nstyle name), then the package will look for a function named\n=toc-org-hrefify-STYLE=, which accepts a heading string and returns a href\ncorresponding to that heading.\n\nE.g. for =org= style it simply returns input as is:\n\n#+BEGIN_SRC emacs-lisp\n  (defun toc-org-hrefify-org (str)\n    \"Given a heading, transform it into a href using the org-mode\n  rules.\"\n    str)\n#+END_SRC\n\n* Example\n\n#+BEGIN_SRC org\n  * About\n  * Table of Contents                                           :TOC:\n    - [[#about][About]]\n    - [[#installation][Installation]]\n        - [[#via-packageel][via package.el]]\n        - [[#manual][Manual]]\n    - [[#use][Use]]\n  * Installation\n  ** via package.el\n  ** Manual\n  * Use\n  * Example\n#+END_SRC\n"
+  (test-toc-org-raw-toc-gold-test
+   "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#use][Use]]\n - [[#different-href-styles][Different href styles]]\n - [[#example][Example]]\n\n* Installation\n** via package.el\nThis is the simplest method if you have the package.el module\n(built-in since Emacs 24.1) you can simply use =M-x package-install=\nand then put the following snippet in your ~/.emacs file\n#+BEGIN_SRC elisp\n  (eval-after-load \"toc-org-autoloads\"\n    '(progn\n       (if (require 'toc-org nil t)\n           (add-hook 'org-mode-hook 'toc-org-enable)\n         (warn \"toc-org not found\"))))\n#+END_SRC\n** Manual                                                             :Hello:\n- Create folder ~/.emacs.d if you don't have it\n- Go to it and clone toc-org there\n  #+BEGIN_SRC sh\n    git clone https://github.com/snosov1/toc-org.git\n  #+END_SRC\n- Put this in your ~/.emacs file\n  #+BEGIN_SRC elisp\n    (add-to-list 'load-path \"~/.emacs.d/toc-org\")\n    (when (require 'toc-org nil t)\n      (add-hook 'org-mode-hook 'toc-org-enable))\n  #+END_SRC\n\n* [#B] Use\n\nAfter the installation, every time you'll be saving an org file, the\nfirst headline with a :TOC: tag will be updated with the current table\nof contents.\n\nTo add a TOC tag, you can use the command =org-set-tags-command=.\n\nIn addition to the simple :TOC: tag, you can also use the following\ntag formats:\n\n- :TOC@2: - sets the max depth of the headlines in the table of\n  contents to 2 (the default)\n\n- :TOC@2@gh: - sets the max depth as in above and also uses the\n  GitHub-style hrefs in the table of contents (the default). The other\n  supported href style is 'org', which is the default org style (you\n  can use C-c C-o to go to the headline at point).\n\nYou can also use =_= as separator, instead of =@=.\n\n* TODO [#a] Different href styles\n\nCurrently, only 2 href styles are supported: =gh= and =org=. You can easily\ndefine your own styles. If you use the tag =:TOC@2@STYLE:= (=STYLE= being a\nstyle name), then the package will look for a function named\n=toc-org-hrefify-STYLE=, which accepts a heading string and returns a href\ncorresponding to that heading.\n\nE.g. for =org= style it simply returns input as is:\n\n#+BEGIN_SRC emacs-lisp\n  (defun toc-org-hrefify-org (str)\n    \"Given a heading, transform it into a href using the org-mode\n  rules.\"\n    str)\n#+END_SRC\n\n* Example\n\n#+BEGIN_SRC org\n  * About\n  * Table of Contents                                           :TOC:\n    - [[#about][About]]\n    - [[#installation][Installation]]\n        - [[#via-packageel][via package.el]]\n        - [[#manual][Manual]]\n    - [[#use][Use]]\n  * Installation\n  ** via package.el\n  ** Manual\n  * Use\n  * DONE Example\n#+END_SRC\n"
    "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n"))
 
 (defun toc-org-hrefify-gh (str)
@@ -161,7 +168,7 @@ rules."
          (special-chars-fix (replace-regexp-in-string toc-org-special-chars-regexp "" upcase-fix t)))
     (concat "#" special-chars-fix)))
 
-(ert-deftest toc-org-test-hrefify-gh ()
+(ert-deftest test-toc-org-hrefify-gh ()
   "Test the `toc-org-hrefify-gh' function"
   (should (equal (toc-org-hrefify-gh "About") "#about"))
   (should (equal (toc-org-hrefify-gh "!h@#$%^&*(){}|][:;\"'/?.>,<`~") "#h"))
@@ -235,7 +242,7 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
-(ert-deftest toc-org-test-hrefify-toc ()
+(ert-deftest test-toc-org-hrefify-toc ()
   (let ((hash (make-hash-table :test 'equal)))
     (should (equal (toc-org-hrefify-toc "* About\n" 'upcase hash)
                    " - [[ABOUT][About]]\n"))
@@ -265,7 +272,7 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
-(ert-deftest toc-org-test-flush-subheadings ()
+(ert-deftest test-toc-org-flush-subheadings ()
   (should (equal (toc-org-flush-subheadings "* About\n" 0)
                  ""))
   (should (equal (toc-org-flush-subheadings "* About\n" 1)
@@ -365,10 +372,10 @@ following tag formats:
     (setq org-link-translation-function 'toc-org-unhrefify)
     (toc-org-insert-toc t)))
 
-(ert-deftest toc-org-test-insert-toc ()
+(ert-deftest test-toc-org-insert-toc ()
   "Test the `toc-org-insert-toc' function"
 
-  (defun toc-org-test-insert-toc-gold-test (content gold)
+  (defun test-toc-org-insert-toc-gold-test (content gold)
     (with-temp-buffer
       (org-mode)
       (insert content)
@@ -378,26 +385,26 @@ following tag formats:
                (buffer-substring-no-properties
                 (point-min) (point-max))
                gold))))
-  (declare-function toc-org-test-insert-toc-gold-test "toc-org") ;; suppress compiler warning
+  (declare-function test-toc-org-insert-toc-gold-test "toc-org") ;; suppress compiler warning
 
   (let ((beg "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     "))
-    (toc-org-test-insert-toc-gold-test
+    (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC:")
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n")
 
-    (toc-org-test-insert-toc-gold-test
+    (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_1:")
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1:\n - [[#about][About]]\n - [[#hello][Hello]]\n")
 
-    (toc-org-test-insert-toc-gold-test
+    (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_3:")
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n     - [[#salut][Salut]]\n")
 
-    (toc-org-test-insert-toc-gold-test
+    (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_1_org:")
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1_org:\n - [[About][About]]\n - [[Hello][Hello]]\n")
 
-    (toc-org-test-insert-toc-gold-test
+    (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_3_org:")
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n - [[About][About]]\n - [[Hello][Hello]]\n   - [[Good-bye][Good-bye]]\n     - [[Salut][Salut]]\n")))
 
