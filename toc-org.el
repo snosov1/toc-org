@@ -362,11 +362,12 @@ following tag formats:
                     (newline (forward-line 1))
 
                     ;; skip drawers
-                    (while (re-search-forward toc-org-drawer-regexp
-                                              (save-excursion ;; limit to next heading
-                                                (search-forward-regexp "^\\*" (point-max) t))
-                                              t)
-                      (skip-chars-forward "[:space:]"))
+                    (let ((end
+                           (save-excursion ;; limit to next heading
+                             (search-forward-regexp "^\\*" (point-max) t))))
+                     (while (re-search-forward toc-org-drawer-regexp end t)
+                      (skip-chars-forward "[:space:]")))
+                    (beginning-of-line)
 
                     ;; insert newline if TOC is currently empty
                     (when (looking-at "^\\*")
