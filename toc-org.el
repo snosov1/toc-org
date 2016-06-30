@@ -53,7 +53,7 @@ files on GitHub)"
   :group 'org)
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
-(defconst toc-org-toc-org-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*:$\\)"
+(defconst toc-org-toc-org-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the heading with the :toc: tag")
 (defconst toc-org-tags-regexp "\s*:[[:word:]:@]*:\s*$"
   "Regexp to find tags on the line")
@@ -66,6 +66,11 @@ files on GitHub)"
 (defconst toc-org-special-chars-regexp "[^[:alnum:]_-]"
   "Regexp with the special characters (which are omitted in hrefs
   by GitHub)")
+(defconst toc-org-drawer-regexp "^[ 	]*:\\(\\(?:\\w\\|[-_]\\)+\\):[ 	]*$"
+  "Regexp to match org drawers. Note: generally, it should be
+equal to `org-drawer-regexp'. However, some older versions of
+org (notably, 8.2.10) restrict the values that can be placed
+between the colons. So, the value here is set explicitly.")
 
 (defcustom toc-org-max-depth 2
   "Maximum depth of the headings to use in the table of
@@ -356,6 +361,13 @@ following tag formats:
                   (unless dry-run
                     (newline (forward-line 1))
 
+                    ;; skip drawers
+                    (while (re-search-forward toc-org-drawer-regexp
+                                              (save-excursion ;; limit to next heading
+                                                (search-forward-regexp "^\\*" (point-max) t))
+                                              t)
+                      (skip-chars-forward "[:space:]"))
+
                     ;; insert newline if TOC is currently empty
                     (when (looking-at "^\\*")
                       (open-line 1))
@@ -398,7 +410,6 @@ following tag formats:
     (with-temp-buffer
       (org-mode)
       (insert content)
-      (toc-org-raw-toc)
       (toc-org-insert-toc)
       (should (equal
                (buffer-substring-no-properties
@@ -425,7 +436,12 @@ following tag formats:
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_3_org:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n - [[About][About]]\n - [[Hello][Hello]]\n   - [[Good-bye][Good-bye]]\n     - [[Salut][Salut]]\n")))
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n - [[About][About]]\n - [[Hello][Hello]]\n   - [[Good-bye][Good-bye]]\n     - [[Salut][Salut]]\n")
+
+    (test-toc-org-insert-toc-gold-test
+     (concat beg ":TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n")
+    ))
 
 ;; Local Variables:
 ;; compile-command: "emacs -batch -l ert -l *.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
