@@ -66,6 +66,10 @@ files on GitHub)"
 (defconst toc-org-special-chars-regexp "[^[:alnum:]_-]"
   "Regexp with the special characters (which are omitted in hrefs
   by GitHub)")
+(defconst toc-org-statistics-cookies-regexp "\s*\\[[0-9]*\\(%\\|/[0-9]*\\)\\]\s*$"
+  "Regexp to find statistics cookies on the line")
+(defconst toc-org-leave-todo-regexp "^#\\+OPTIONS:.*\stodo:t[\s\n]"
+  "Regexp to find the todo export setting")
 (defconst toc-org-drawer-regexp "^[ 	]*:\\(\\(?:\\w\\|[-_]\\)+\\):[ 	]*$"
   "Regexp to match org drawers. Note: generally, it should be
 equal to `org-drawer-regexp'. However, some older versions of
@@ -97,9 +101,17 @@ headings.")
 i.e. simply flush everything that's not a heading and strip
 auxiliary text."
   (let ((content (buffer-substring-no-properties
-                  (point-min) (point-max))))
+                  (point-min) (point-max)))
+        (leave-states-p nil))
     (with-temp-buffer
       (insert content)
+
+      ;; set leave-states-p variable
+      (goto-char (point-min))
+      (when (re-search-forward toc-org-leave-todo-regexp nil t)
+        (setq leave-states-p t))
+
+      ;; keep only lines starting with *s
       (goto-char (point-min))
       (keep-lines "^\*+[ ]")
 
@@ -110,9 +122,10 @@ auxiliary text."
       (delete-region (point) (progn (forward-line 1) (point)))
 
       ;; strip states
-      (goto-char (point-min))
-      (while (re-search-forward toc-org-states-regexp nil t)
-        (replace-match "" nil nil nil 1))
+      (unless leave-states-p
+        (goto-char (point-min))
+        (while (re-search-forward toc-org-states-regexp nil t)
+          (replace-match "" nil nil nil 1)))
 
       ;; strip priorities
       (goto-char (point-min))
@@ -196,10 +209,22 @@ rules."
     (puthash "#about-2" "About" hash)
     (should (equal (toc-org-hrefify-gh "About" hash) "#about-3"))))
 
+(defun toc-org-format-visible-link (str)
+  "Formats the visible text of the link."
+  (with-temp-buffer
+    (insert str)
+
+    ;; strip statistics cookies
+    (goto-char (point-min))
+    (while (re-search-forward toc-org-statistics-cookies-regexp nil t)
+      (replace-match "" nil nil))
+    (buffer-substring-no-properties
+     (point-min) (point-max))))
+
 (defun toc-org-hrefify-org (str &optional hash)
   "Given a heading, transform it into a href using the org-mode
 rules."
-  str)
+  (toc-org-format-visible-link str))
 
 (defun toc-org-unhrefify (type path)
   "Looks for a value in toc-org-hrefify-hash using path as a key."
@@ -253,7 +278,11 @@ each heading into a link."
               (insert "[[")
               (insert hrefified)
               (insert "][")
-              (end-of-line)
+              (insert
+               (toc-org-format-visible-link
+                (buffer-substring-no-properties
+                 (point) (line-end-position))))
+              (kill-line)
               (insert "]]")
 
               ;; maintain the hash table, if provided
@@ -365,8 +394,8 @@ following tag formats:
                     (let ((end
                            (save-excursion ;; limit to next heading
                              (search-forward-regexp "^\\*" (point-max) 'skip))))
-                     (while (re-search-forward toc-org-drawer-regexp end t)
-                      (skip-chars-forward "[:space:]")))
+                      (while (re-search-forward toc-org-drawer-regexp end t)
+                        (skip-chars-forward "[:space:]")))
                     (beginning-of-line)
 
                     ;; insert newline if TOC is currently empty
@@ -446,6 +475,10 @@ following tag formats:
     (test-toc-org-insert-toc-gold-test
      "* H1\n* H2\n* TOC           :TOC:\n - [[#header-1][Header 1]]\n - [[#header-2][Header 2]]\n"
      "* H1\n* H2\n* TOC           :TOC:\n - [[#h1][H1]]\n - [[#h2][H2]]\n")
+
+    (test-toc-org-insert-toc-gold-test
+     "* H1\n* TODO H2\n* TOC           :TOC:\n \n"
+     "* H1\n* TODO H2\n* TOC           :TOC:\n - [[#h1][H1]]\n - [[#h2][H2]]\n")
     ))
 
 ;; Local Variables:

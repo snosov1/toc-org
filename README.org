@@ -103,13 +103,13 @@ hrefs. The table can be used to maintain href uniqueness (see
 =toc-org-hrefify-gh=, for example). Return value should be a href corresponding
 to that heading.
 
-E.g. for =org= style it simply returns input as is:
+E.g. for =org= style it makes links to be the same as their visible text:
 
 #+BEGIN_SRC emacs-lisp
   (defun toc-org-hrefify-org (str &optional hash)
     "Given a heading, transform it into a href using the org-mode
   rules."
-    str)
+    (toc-org-format-visible-link str))
 #+END_SRC
 
 * Example
