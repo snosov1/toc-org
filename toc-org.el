@@ -290,6 +290,9 @@ each heading into a link."
             (skip-chars-forward " ")
             (insert "- ")
 
+	    (save-excursion
+	      (delete-trailing-whitespace (point) (line-end-position)))
+
             (let* ((beg (point))
                    (end (line-end-position))
                    (heading (buffer-substring-no-properties
