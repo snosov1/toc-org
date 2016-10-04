@@ -57,8 +57,6 @@ files on GitHub)"
   "Regexp to find the heading with the :toc: tag")
 (defconst toc-org-tags-regexp "\s*:[[:word:]:@]*:\s*$"
   "Regexp to find tags on the line")
-(defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
-  "Regexp to find states on the line")
 (defconst toc-org-priorities-regexp "^*+\s+\\(\\[#.\\]\s+\\)"
   "Regexp to find states on the line")
 (defconst toc-org-links-regexp "\\[\\[\\(.*?\\)\\]\\[\\(.*?\\)\\]\\]"
@@ -100,6 +98,9 @@ headings.")
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading and strip
 auxiliary text."
+  (setq toc-org-states-regexp (concat "^*+ +\\("
+					(mapconcat 'identity (mapcar (lambda(x) (car x)) (reverse (cdr (reverse (cdr org-todo-key-alist))))) " +\\|")
+					" +\\)"))
   (let ((content (buffer-substring-no-properties
                   (point-min) (point-max)))
         (leave-states-p nil))
