@@ -305,7 +305,7 @@ each heading into a link."
                (toc-org-format-visible-link
                 (buffer-substring-no-properties
                  (point) (line-end-position))))
-              (kill-line)
+              (delete-region (point) (line-end-position))
               (insert "]]")
 
               ;; maintain the hash table, if provided
