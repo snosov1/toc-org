@@ -323,6 +323,13 @@ each heading into a link."
                                         hash)
                    " - [[ABOUT][About]]\n"))
     (should (equal (gethash "ABOUT" hash) "About")))
+  ;; check trailing space: https://github.com/snosov1/toc-org/pull/31
+  (let ((hash (make-hash-table :test 'equal)))
+    (should (equal (toc-org-hrefify-toc "* About  \n"
+                                        (lambda (str &optional hash) (upcase str))
+                                        hash)
+                   " - [[ABOUT][About]]\n"))
+    (should (equal (gethash "ABOUT" hash) "About")))
   (let ((hash (make-hash-table :test 'equal)))
     (should (equal (toc-org-hrefify-toc "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" (lambda (str &optional hash) (upcase str)) hash)
                    " - [[ABOUT][About]]\n - [[INSTALLATION][Installation]]\n   - [[VIA PACKAGE.EL][via package.el]]\n   - [[MANUAL][Manual]]\n - [[USE][Use]]\n - [[DIFFERENT HREF STYLES][Different href styles]]\n - [[EXAMPLE][Example]]\n"))
