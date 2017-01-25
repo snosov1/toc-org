@@ -8,4 +8,4 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq -yy emacs24-nox emacs24-el
   - emacs --version
-script: emacs -batch -l ert -l *.el -l *-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls
+script: emacs -batch -l ert -l toc-org.el -l toc-org-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile toc-org.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls

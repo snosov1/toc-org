@@ -355,7 +355,7 @@ following tag formats:
     (toc-org-insert-toc t)))
 
 ;; Local Variables:
-;; compile-command: "emacs -batch -l ert -l *.el -l *-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile *.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
+;; compile-command: "emacs -batch -l ert -l toc-org.el -l toc-org-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile toc-org.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
 ;; End:
 
 (provide 'toc-org)
