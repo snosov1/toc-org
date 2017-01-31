@@ -135,7 +135,7 @@ auxiliary text."
           (while (progn
                    (beginning-of-line)
                    (delete-region (point) (min (1+ (line-end-position)) (point-max)))
-                   (string-prefix-p skip-depth (current-word))))))
+                   (string-prefix-p skip-depth (or (current-word) ""))))))
 
       ;; strip priorities
       (goto-char (point-min))
