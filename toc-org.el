@@ -58,6 +58,8 @@ files on GitHub)"
   "Regexp to find tags on the line")
 (defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
   "Regexp to find states on the line")
+(defconst toc-org-COMMENT-regexp "\\(^*+\\)\s+\\(COMMENT\s+\\)"
+  "Regexp to find COMMENT headlines")
 (defconst toc-org-priorities-regexp "^*+\s+\\(\\[#.\\]\s+\\)"
   "Regexp to find states on the line")
 (defconst toc-org-links-regexp "\\[\\[\\(.*?\\)\\]\\[\\(.*?\\)\\]\\]"
@@ -125,6 +127,15 @@ auxiliary text."
         (goto-char (point-min))
         (while (re-search-forward toc-org-states-regexp nil t)
           (replace-match "" nil nil nil 1)))
+
+      ;; strip COMMENT headlines
+      (goto-char (point-min))
+      (while (re-search-forward toc-org-COMMENT-regexp nil t)
+        (let ((skip-depth (concat (match-string 1) "*")))
+          (while (progn
+                   (beginning-of-line)
+                   (delete-region (point) (min (1+ (line-end-position)) (point-max)))
+                   (string-prefix-p skip-depth (current-word))))))
 
       ;; strip priorities
       (goto-char (point-min))
