@@ -105,6 +105,7 @@ auxiliary text."
                   (point-min) (point-max)))
         (leave-states-p nil))
     (with-temp-buffer
+      (org-mode)
       (insert content)
 
       ;; set leave-states-p variable
@@ -141,6 +142,22 @@ auxiliary text."
       (goto-char (point-min))
       (while (re-search-forward toc-org-priorities-regexp nil t)
         (replace-match "" nil nil nil 1))
+
+      ;; Remove headings with :noexport: tag
+      (goto-char (point-min))
+      (while (re-search-forward org-complex-heading-regexp nil t)
+        (let ((tags (match-string 5)))
+          (when (and tags
+                     (string-match ":noexport:" tags))
+            (org-cut-subtree))))
+
+      ;; Remove headings below :noexport_children: tag
+      (goto-char (point-min))
+      (while (re-search-forward org-complex-heading-regexp nil t)
+        (let ((tags (match-string 5)))
+          (when (and tags
+                     (string-match ":noexport_children:" tags))
+            (delete-region (line-end-position) (1- (org-element-property :end (org-element-at-point)))))))
 
       ;; strip tags
       ;; TODO :export: and :noexport: tags semantic should be probably

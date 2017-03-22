@@ -18,6 +18,7 @@ name conflict with one of the org contrib modules.
  - [[#use][Use]]
    - [[#follow-links][Follow links]]
    - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
+   - [[#exclude-headings][Exclude headings]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
 
@@ -90,6 +91,10 @@ In your emacs' setup, you can bind a tag =:TOC:= to a binding =T=:
 #+END_SRC
 
 Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
+
+** Exclude headings
+
+Headings tagged =:noexport:= will be excluded from the TOC.  Headings tagged =:noexport_children:= will have their children excluded from the TOC.
 
 * Different href styles
 
