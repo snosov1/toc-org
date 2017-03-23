@@ -54,7 +54,9 @@ files on GitHub)"
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
 (defconst toc-org-toc-org-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the heading with the :toc: tag")
-(defconst toc-org-tags-regexp "\s*:[[:word:]:@]*:\s*$"
+(defconst toc-org-noexport-regexp "\\(^*+\\)\s+.*:noexport\\([@_][0-9]\\)?:\\($\\|[^ ]*?:$\\)"
+  "Regexp to find the extended version of :noexport: tag")
+(defconst toc-org-tags-regexp "\s*:[[:word:]:@_]*:\s*$"
   "Regexp to find tags on the line")
 (defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
   "Regexp to find states on the line")
@@ -137,14 +139,31 @@ auxiliary text."
                    (delete-region (point) (min (1+ (line-end-position)) (point-max)))
                    (string-prefix-p skip-depth (or (current-word) ""))))))
 
+      ;; strip headings with :noexport: tag
+      (goto-char (point-min))
+      (while (re-search-forward toc-org-noexport-regexp nil t)
+        (save-excursion
+          (let* ((tag  (match-string 2))
+                 (depth (if tag (string-to-number (substring tag 1)) 0))
+                 (subheading-depth (concat (match-string 1) "*"))
+                 (skip-depth (concat subheading-depth (make-string (max (1- depth) 0) ?*))))
+            (if (> depth 0)
+                (forward-line)
+              (beginning-of-line)
+              (delete-region (point) (min (1+ (line-end-position)) (point-max))))
+            (while (string-prefix-p subheading-depth (or (current-word) ""))
+              (if (string-prefix-p skip-depth (or (current-word) ""))
+                  (progn
+                    (beginning-of-line)
+                    (delete-region (point) (min (1+ (line-end-position)) (point-max))))
+                (forward-line))))))
+
       ;; strip priorities
       (goto-char (point-min))
       (while (re-search-forward toc-org-priorities-regexp nil t)
         (replace-match "" nil nil nil 1))
 
       ;; strip tags
-      ;; TODO :export: and :noexport: tags semantic should be probably
-      ;; implemented
       (goto-char (point-min))
       (while (re-search-forward toc-org-tags-regexp nil t)
         (replace-match "" nil nil))
