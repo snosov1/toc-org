@@ -17,6 +17,7 @@ name conflict with one of the org contrib modules.
    - [[#manual][Manual]]
  - [[#use][Use]]
    - [[#follow-links][Follow links]]
+   - [[#exclude-headings][Exclude headings]]
    - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
  - [[#different-href-styles][Different href styles]]
  - [[#example][Example]]
@@ -80,6 +81,16 @@ is not nil).
 
 You can manually disable this functionality by setting
 =toc-org-enable-links-opening= to nil.
+
+** Exclude headings
+
+Headings tagged with =:noexport:= will be excluded from the TOC. If you want to
+preserve the heading, but strip its children (for changelog entries, for
+example), you can tag it =:noexport_1:= (by analogy, you can use =:noexport_2:=,
+=:noexport_3:=, etc. for children of deeper levels). Note, though, =:noexport:=
+has a similar meaning in =org-mode=, which I hope is a Good Thing (tm). However,
+=:noexport_1:= and friends won't be recognized by =org-mode= as anything
+special. Look at =org-export-exclude-tags= variable for more details.
 
 ** Shortcut for TOC tag
 
