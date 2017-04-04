@@ -294,26 +294,33 @@ each heading into a link."
      (point-min) (point-max))))
 
 (defun toc-org-insert-toc (&optional dry-run)
-  "Looks for a headline with the TOC tag and updates it with the
-current table of contents.
+  "Update table of contents in heading tagged :TOC:.
 
-If optional second argument DRY-RUN is provided, then the buffer
-is not modified at all. Only the internal hash-table is updated
-to enable `org-open-at-point' for TOC links.
+When DRY-RUN is non-nil, the buffer is not modified, only the
+internal hash-table is updated to enable `org-open-at-point' for
+TOC links.
 
-To add a TOC tag, you can use the command
-`org-set-tags-command' (C-c C-q).
+The table of contents heading may also be set with these tags:
 
-In addition to the simple :TOC: tag, you can also use the
-following tag formats:
+- :TOC_#: Sets the maximum depth of the headlines in the table of
+          contents to the number given, e.g. :TOC_3: for
+          3 (default for plain :TOC: tag is 2).
 
-- :TOC_2: - sets the max depth of the headlines in the table of
-  contents to 2 (the default)
+- :TOC_#_gh: Sets the maximum depth as above and also uses
+             GitHub-style anchors in the table of contents (the
+             default).  The other supported style is :TOC_#_org:,
+             which is the default org style.
 
-- :TOC_2_gh: - sets the max depth as in above and also uses the
-  GitHub-style hrefs in the table of contents (this style is
-  default). The other supported href style is 'org', which is the
-  default org style."
+Headings may be excluded from the TOC with these tags:
+
+- :noexport: Exclude this heading.
+
+- :noexport_#: Exclude this heading's children with relative
+               level greater than number given (e.g. :noexport_1:
+               causes all child headings to be excluded).
+
+Note that :noexport: is also used by Org-mode's exporter, but
+not :noexport_#:."
 
   (interactive)
   (when (eq major-mode 'org-mode)
