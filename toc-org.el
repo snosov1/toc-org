@@ -94,6 +94,10 @@ and their subheadings (one and two stars)."
 the TOC links (even if the style is different from org)."
   :group 'toc-org)
 
+(defcustom toc-org-skip-pre-toc-headings nil
+  "Leave headings out of the TOC that occur before the TOC itself."
+  :group 'toc-org :type 'boolean)
+
 (defvar-local toc-org-hrefify-hash nil
   "Buffer local hash-table that is used to enable links
 opening. The keys are hrefified headings, the values are original
@@ -122,7 +126,10 @@ auxiliary text."
       (goto-char (point-min))
       (re-search-forward toc-org-toc-org-regexp nil t)
       (beginning-of-line)
-      (delete-region (point) (progn (forward-line 1) (point)))
+      (delete-region (if toc-org-skip-pre-toc-headings
+                         (point-min)
+                       (point))
+                     (progn (forward-line 1) (point)))
 
       ;; strip states
       (unless leave-states-p
