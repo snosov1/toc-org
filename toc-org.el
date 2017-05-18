@@ -250,8 +250,8 @@ each heading into a link."
                        (+ 2 (or (bound-and-true-p org-list-indent-offset) 0))
                        ?\s)))
 
+            (insert "-")
             (skip-chars-forward " ")
-            (insert "- ")
 
 	    (save-excursion
 	      (delete-trailing-whitespace (point) (line-end-position)))
