@@ -11,16 +11,16 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
 name conflict with one of the org contrib modules.
 
 * Table of Contents                                                     :TOC:
- - [[#about][About]]
- - [[#installation][Installation]]
-   - [[#via-packageel][via package.el]]
-   - [[#manual][Manual]]
- - [[#use][Use]]
-   - [[#follow-links][Follow links]]
-   - [[#exclude-headings][Exclude headings]]
-   - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
- - [[#different-href-styles][Different href styles]]
- - [[#example][Example]]
+- [[#about][About]]
+- [[#installation][Installation]]
+  - [[#via-packageel][via package.el]]
+  - [[#manual][Manual]]
+- [[#use][Use]]
+  - [[#follow-links][Follow links]]
+  - [[#exclude-headings][Exclude headings]]
+  - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
+- [[#different-href-styles][Different href styles]]
+- [[#example][Example]]
 
 * Installation
 ** via package.el
@@ -127,11 +127,13 @@ E.g. for =org= style it makes links to be the same as their visible text:
 #+BEGIN_SRC org
   * About
   * Table of Contents                                           :TOC:
-    - [[#about][About]]
-    - [[#installation][Installation]]
-        - [[#via-packageel][via package.el]]
-        - [[#manual][Manual]]
-    - [[#use][Use]]
+  - [[#about][About]]
+  - [[#installation][Installation]]
+    - [[#via-packageel][via package.el]]
+    - [[#manual][Manual]]
+  - [[#use][Use]]
+  - [[#example][Example]]
+
   * Installation
   ** via package.el
   ** Manual

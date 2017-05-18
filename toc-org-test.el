@@ -136,18 +136,18 @@
     (should (equal (toc-org-hrefify-toc "* About\n"
                                         (lambda (str &optional hash) (upcase str))
                                         hash)
-                   " - [[ABOUT][About]]\n"))
+                   "- [[ABOUT][About]]\n"))
     (should (equal (gethash "ABOUT" hash) "About")))
   ;; check trailing space: https://github.com/snosov1/toc-org/pull/31
   (let ((hash (make-hash-table :test 'equal)))
     (should (equal (toc-org-hrefify-toc "* About  \n"
                                         (lambda (str &optional hash) (upcase str))
                                         hash)
-                   " - [[ABOUT][About]]\n"))
+                   "- [[ABOUT][About]]\n"))
     (should (equal (gethash "ABOUT" hash) "About")))
   (let ((hash (make-hash-table :test 'equal)))
     (should (equal (toc-org-hrefify-toc "* About\n* Installation\n** via package.el\n** Manual\n* Use\n* Different href styles\n* Example\n" (lambda (str &optional hash) (upcase str)) hash)
-                   " - [[ABOUT][About]]\n - [[INSTALLATION][Installation]]\n   - [[VIA PACKAGE.EL][via package.el]]\n   - [[MANUAL][Manual]]\n - [[USE][Use]]\n - [[DIFFERENT HREF STYLES][Different href styles]]\n - [[EXAMPLE][Example]]\n"))
+                   "- [[ABOUT][About]]\n- [[INSTALLATION][Installation]]\n  - [[VIA PACKAGE.EL][via package.el]]\n  - [[MANUAL][Manual]]\n- [[USE][Use]]\n- [[DIFFERENT HREF STYLES][Different href styles]]\n- [[EXAMPLE][Example]]\n"))
     (should (equal (gethash "ABOUT" hash) "About"))
     (should (equal (gethash "INSTALLATION" hash) "Installation"))
     (should (equal (gethash "VIA PACKAGE.EL" hash) "via package.el"))
@@ -190,33 +190,33 @@
   (let ((beg "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     "))
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n")
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_1:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1:\n - [[#about][About]]\n - [[#hello][Hello]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1:\n- [[#about][About]]\n- [[#hello][Hello]]\n")
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_3:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n     - [[#salut][Salut]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3:\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n    - [[#salut][Salut]]\n")
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_1_org:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1_org:\n - [[About][About]]\n - [[Hello][Hello]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_1_org:\n- [[About][About]]\n- [[Hello][Hello]]\n")
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC_3_org:")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n - [[About][About]]\n - [[Hello][Hello]]\n   - [[Good-bye][Good-bye]]\n     - [[Salut][Salut]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3_org:\n- [[About][About]]\n- [[Hello][Hello]]\n  - [[Good-bye][Good-bye]]\n    - [[Salut][Salut]]\n")
 
     (test-toc-org-insert-toc-gold-test
      (concat beg ":TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n")
-     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n - [[#about][About]]\n - [[#hello][Hello]]\n   - [[#good-bye][Good-bye]]\n")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n")
 
     (test-toc-org-insert-toc-gold-test
      "* H1\n* H2\n* TOC           :TOC:\n - [[#header-1][Header 1]]\n - [[#header-2][Header 2]]\n"
-     "* H1\n* H2\n* TOC           :TOC:\n - [[#h1][H1]]\n - [[#h2][H2]]\n")
+     "* H1\n* H2\n* TOC           :TOC:\n- [[#h1][H1]]\n- [[#h2][H2]]\n")
 
     (test-toc-org-insert-toc-gold-test
      "* H1\n* TODO H2\n* TOC           :TOC:\n \n"
-     "* H1\n* TODO H2\n* TOC           :TOC:\n - [[#h1][H1]]\n - [[#h2][H2]]\n")
+     "* H1\n* TODO H2\n* TOC           :TOC:\n- [[#h1][H1]]\n- [[#h2][H2]]\n")
     ))
