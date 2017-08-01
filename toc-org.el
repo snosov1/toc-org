@@ -279,12 +279,21 @@ each heading into a link."
     (buffer-substring-no-properties
      (point-min) (point-max))))
 
-(defun toc-org-flush-subheadings (toc max-depth)
-  "Flush subheadings of the raw `toc' deeper than `max-depth'."
+(cl-defun toc-org-flush-subheadings (toc max-depth &optional (min-depth 0))
+  "Flush subheadings of the raw `toc' deeper than `max-depth'.
+If MIN-DEPTH >= 2, remove headings < that number."
   (with-temp-buffer
     (insert toc)
-    (goto-char (point-min))
 
+    ;; Remove headings "below" "minimum" level (the terminology gets
+    ;; confusing, since a top-level heading (i.e. the highest) has the
+    ;; fewest number of stars)
+    (when (>= min-depth 2)
+      (goto-char (point-min))
+      (flush-lines (rx-to-string `(seq bol (repeat 1 ,(1- min-depth) "*") space))))
+
+    ;; Remove headings "above" "maximum" level
+    (goto-char (point-min))
     (let ((re "^"))
       (dotimes (i (1+ max-depth))
         (setq re (concat re "\\*")))
@@ -333,6 +342,7 @@ not :noexport_#:."
                  (depth (if tag
                             (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
                           toc-org-max-depth))
+                 (toc-level (org-outline-level))
                  (hrefify-tag (if (and tag (>= (length tag) 4))
                                   (downcase (substring tag 3))
                                 toc-org-hrefify-default))
@@ -341,7 +351,7 @@ not :noexport_#:."
             (if hrefify
                 (let ((new-toc
                        (toc-org-hrefify-toc
-                        (toc-org-flush-subheadings (toc-org-raw-toc) depth)
+                        (toc-org-flush-subheadings (toc-org-raw-toc) depth toc-level)
                         hrefify
                         (when toc-org-hrefify-hash
                           (clrhash toc-org-hrefify-hash)))))
