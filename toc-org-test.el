@@ -102,6 +102,11 @@
   (test-toc-org-raw-toc-gold-test
    "* About\n:TOC:\n drawer\n:END:\n\n* Table of Contents                                                     :TOC:\n - [[#about][About]]\n - [[#use][Use]]\n - [[#different-href-styles][Different href styles]]\n - [[#example][Example]]\n\n#+OPTIONS: num: nil todo:t |:t\n\n* Installation\n** DONE via package.el\nThis is the simplest method if you have the package.el module\n(built-in since Emacs 24.1) you can simply use =M-x package-install=\nand then put the following snippet in your ~/.emacs file\n#+BEGIN_SRC elisp\n  (eval-after-load \"toc-org-autoloads\"\n    '(progn\n       (if (require 'toc-org nil t)\n           (add-hook 'org-mode-hook 'toc-org-enable)\n         (warn \"toc-org not found\"))))\n#+END_SRC\n*** Rather commentious\n** Manual                                                             :noexport_2:\n- Create folder ~/.emacs.d if you don't have it\n*** EWW\n*** Commented :noexport_1:\nAAA\nBBBC\n**** Commomentoded\nWEW\n** No remove\n* Test ***\n"
    "* About\n* Installation\n** DONE via package.el\n*** Rather commentious\n** Manual\n*** EWW\n*** Commented\n** No remove\n* Test ***\n")
+
+  ;; test custom todo keywords
+  (test-toc-org-raw-toc-gold-test
+   "#+STARTUP: showall align\n#+OPTIONS: todo:nil tasks:all tags:nil\n#+EXCLUDE_TAGS: TOC_3\n#+TODO: CANCER SHMANCER | PARTY\n#+TYP_TODO: FII IFF ADS\n\n* Summary                                                             :TOC_3:\n- [[#done-task1][DONE Task1]]\n- [[#todo-task3][TODO Task3]]\n- [[#task2][Task2]]\n  - [[#subtask][SubTask]]\n- [[#task3][Task3]]\n\n* DONE Task1\n  CLOSED: [2017-09-08 Fri 01:46]\n* TODO Task3\n* CANCER Task2\n** FII SubTask\n* CANCER Task3\n"
+   "* DONE Task1\n* TODO Task3\n* Task2\n** SubTask\n* Task3\n")
   )
 
 (ert-deftest test-toc-org-hrefify-gh ()

@@ -58,8 +58,8 @@ files on GitHub)"
   "Regexp to find the extended version of :noexport: tag")
 (defconst toc-org-tags-regexp "\s*:[[:word:]:@_]*:\s*$"
   "Regexp to find tags on the line")
-(defconst toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"
-  "Regexp to find states on the line")
+(defconst toc-org-todo-custom-keywords-regexp "^#\\+\\(TODO\\|SEQ_TODO\\|TYP_TODO\\):\\(.*\\)$"
+  "Regexp to find custom TODO keywords")
 (defconst toc-org-COMMENT-regexp "\\(^*+\\)\s+\\(COMMENT\s+\\)"
   "Regexp to find COMMENT headlines")
 (defconst toc-org-priorities-regexp "^*+\s+\\(\\[#.\\]\s+\\)"
@@ -105,7 +105,9 @@ i.e. simply flush everything that's not a heading and strip
 auxiliary text."
   (let ((content (buffer-substring-no-properties
                   (point-min) (point-max)))
-        (leave-states-p nil))
+        (leave-states-p nil)
+        (custom-keywords nil)
+        (toc-org-states-regexp ""))
     (with-temp-buffer
       (insert content)
 
@@ -113,6 +115,15 @@ auxiliary text."
       (goto-char (point-min))
       (when (re-search-forward toc-org-leave-todo-regexp nil t)
         (setq leave-states-p t))
+
+      ;; set toc-org-states-regexp (after collecting custom keywords)
+      (goto-char (point-min))
+      (while (re-search-forward toc-org-todo-custom-keywords-regexp nil t)
+        (setq custom-keywords (append custom-keywords (split-string (match-string 2) "[ \f\t\n\r\v|]+" t))))
+      (if custom-keywords
+          (setq toc-org-states-regexp
+                (concat "^*+\s+\\(" (string-join custom-keywords "\s+\\|") "\s+\\)"))
+        (setq toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"))
 
       ;; keep only lines starting with *s
       (goto-char (point-min))
