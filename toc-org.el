@@ -334,7 +334,7 @@ Note that :noexport: is also used by Org-mode's exporter, but
 not :noexport_#:."
 
   (interactive)
-  (when (eq major-mode 'org-mode)
+  (when (derived-mode-p major-mode 'org-mode)
     (save-excursion
       (goto-char (point-min))
       (let ((case-fold-search t))
