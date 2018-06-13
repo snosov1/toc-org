@@ -83,15 +83,18 @@ between the colons. So, the value here is set explicitly.")
   "Maximum depth of the headings to use in the table of
 contents. The default of 2 uses only the highest level headings
 and their subheadings (one and two stars)."
+  :type 'integer
   :group 'toc-org)
 
 (defcustom toc-org-hrefify-default "gh"
   "Default hrefify function to use."
+  :type 'string
   :group 'toc-org)
 
 (defcustom toc-org-enable-links-opening t
   "With this option, org-open-at-point (C-c C-o) should work on
 the TOC links (even if the style is different from org)."
+  :type 'boolean
   :group 'toc-org)
 
 (defvar-local toc-org-hrefify-hash nil
