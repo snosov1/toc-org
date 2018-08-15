@@ -194,7 +194,7 @@ auxiliary text."
   "Given a heading, transform it into a href using the GitHub
 rules."
   (let* ((spc-fix (replace-regexp-in-string " " "-" str))
-         (upcase-fix (replace-regexp-in-string "[A-Z]" 'downcase spc-fix t))
+         (upcase-fix (downcase spc-fix))
          (special-chars-fix (replace-regexp-in-string toc-org-special-chars-regexp "" upcase-fix t))
          (hrefified-base (concat "#" special-chars-fix))
          (hrefified hrefified-base)
