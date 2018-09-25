@@ -54,6 +54,8 @@ files on GitHub)"
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
 (defconst toc-org-toc-org-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the heading with the :toc: tag")
+(defconst toc-org-quote-tag-regexp "^*.*:quote:\\($\\|[^ ]*?:$\\)"
+  "Regexp to find the heading with the :quote: tag")
 (defconst toc-org-noexport-regexp "\\(^*+\\)\s+.*:noexport\\([@_][0-9]\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the extended version of :noexport: tag")
 (defconst toc-org-tags-regexp "\s*:[[:word:]:@_]*:\s*$"
@@ -351,14 +353,19 @@ not :noexport_#:."
                                   (downcase (substring tag 3))
                                 toc-org-hrefify-default))
                  (hrefify-string (concat "toc-org-hrefify-" hrefify-tag))
-                 (hrefify (intern-soft hrefify-string)))
+                 (hrefify (intern-soft hrefify-string))
+                 (put-quote (save-match-data (string-match toc-org-quote-tag-regexp (match-string 0))))
+                 (toc-prefix (if put-quote "#+BEGIN_QUOTE\n" ""))
+                 (toc-suffix (if put-quote "#+END_QUOTE\n" "")))
             (if hrefify
                 (let ((new-toc
-                       (toc-org-hrefify-toc
-                        (toc-org-flush-subheadings (toc-org-raw-toc) depth)
-                        hrefify
-                        (when toc-org-hrefify-hash
-                          (clrhash toc-org-hrefify-hash)))))
+                       (concat toc-prefix
+                               (toc-org-hrefify-toc
+                                (toc-org-flush-subheadings (toc-org-raw-toc) depth)
+                                hrefify
+                                (when toc-org-hrefify-hash
+                                  (clrhash toc-org-hrefify-hash)))
+                               toc-suffix)))
                   (unless dry-run
                     (newline (forward-line 1))
 
