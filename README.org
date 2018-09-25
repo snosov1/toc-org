@@ -10,7 +10,8 @@ It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] 
 *NOTE:* Previous name of the package is =org-toc=. It was changed because of a
 name conflict with one of the org contrib modules.
 
-* Table of Contents                                                     :TOC:
+* Table of Contents                                                     :TOC:QUOTE:
+#+BEGIN_QUOTE
 - [[#about][About]]
 - [[#installation][Installation]]
   - [[#via-packageel][via package.el]]
@@ -18,9 +19,11 @@ name conflict with one of the org contrib modules.
 - [[#use][Use]]
   - [[#follow-links][Follow links]]
   - [[#exclude-headings][Exclude headings]]
+  - [[#quote-table-of-contents][Quote table of contents]]
   - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
 - [[#different-href-styles][Different href styles]]
 - [[#example][Example]]
+#+END_QUOTE
 
 * Installation
 ** via package.el
@@ -91,6 +94,13 @@ example), you can tag it =:noexport_1:= (by analogy, you can use =:noexport_2:=,
 has a similar meaning in =org-mode=, which I hope is a Good Thing (tm). However,
 =:noexport_1:= and friends won't be recognized by =org-mode= as anything
 special. Look at =org-export-exclude-tags= variable for more details.
+
+** Quote table of contents
+
+For presentation purposes, you might want to put the table of contents in a
+quote block (i.e. =#+BEGIN_QUOTE= / =#+END_QUOTE=). In that case, GitHub, for
+example, will add a vertical line to the left of the TOC that makes it distinct
+from the main text. To do this, just add a =:QUOTE:= tag to the TOC heading.
 
 ** Shortcut for TOC tag
 
