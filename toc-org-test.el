@@ -218,6 +218,14 @@
      "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC:\n:PROPERTIES:\n:VISIBILITY: content\n:END:\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n")
 
     (test-toc-org-insert-toc-gold-test
+     (concat beg ":TOC_3:QUOTE:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :TOC_3:QUOTE:\n#+BEGIN_QUOTE\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n    - [[#salut][Salut]]\n#+END_QUOTE\n")
+
+    (test-toc-org-insert-toc-gold-test
+     (concat beg ":QUOTE:TOC_3_gh:")
+     "* About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n* Hello\n** Good-bye\n*** Salut\n* Table of Contents                                                     :QUOTE:TOC_3_gh:\n#+BEGIN_QUOTE\n- [[#about][About]]\n- [[#hello][Hello]]\n  - [[#good-bye][Good-bye]]\n    - [[#salut][Salut]]\n#+END_QUOTE\n")
+
+    (test-toc-org-insert-toc-gold-test
      "* H1\n* H2\n* TOC           :TOC:\n - [[#header-1][Header 1]]\n - [[#header-2][Header 2]]\n"
      "* H1\n* H2\n* TOC           :TOC:\n- [[#h1][H1]]\n- [[#h2][H2]]\n")
 
