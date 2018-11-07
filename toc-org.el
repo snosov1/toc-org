@@ -419,8 +419,7 @@ not :noexport_#:."
   (if toc-org-mode
       (toc-org-enable)
     (remove-hook 'before-save-hook 'toc-org-insert-toc t)
-    ;; we would've set `org-link-translation-function' only if it's been bound
-    ;; to nil
+    ;; we would've set `org-link-translation-function' only if it's been nil
     (when (equal org-link-translation-function 'toc-org-unhrefify)
       (setq org-link-translation-function nil))))
 
