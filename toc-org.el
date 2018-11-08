@@ -412,6 +412,17 @@ not :noexport_#:."
     (setq org-link-translation-function 'toc-org-unhrefify)
     (toc-org-insert-toc t)))
 
+;;;###autoload
+(define-minor-mode toc-org-mode
+  "Toggle `toc-org' in this buffer."
+  :group toc-org
+  (if toc-org-mode
+      (toc-org-enable)
+    (remove-hook 'before-save-hook 'toc-org-insert-toc t)
+    ;; we would've set `org-link-translation-function' only if it's been nil
+    (when (equal org-link-translation-function 'toc-org-unhrefify)
+      (setq org-link-translation-function nil))))
+
 ;; Local Variables:
 ;; compile-command: "emacs -batch -l ert -l toc-org.el -l toc-org-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile toc-org.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"
 ;; End:
