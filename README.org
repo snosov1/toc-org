@@ -51,7 +51,7 @@ repository and then put the following snippet in your ~/.emacs file
   #+BEGIN_SRC elisp
     (add-to-list 'load-path "~/.emacs.d/toc-org")
     (if (require 'toc-org nil t)
-        (add-hook 'org-mode-hook 'toc-org-enable)
+        (add-hook 'org-mode-hook 'toc-org-mode)
       (warn "toc-org not found"))
   #+END_SRC
 
