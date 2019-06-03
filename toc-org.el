@@ -127,7 +127,10 @@ auxiliary text."
         (setq custom-keywords (append custom-keywords (split-string (match-string 2) "[ \f\t\n\r\v|]+" t))))
       (if custom-keywords
           (setq toc-org-states-regexp
-                (concat "^*+\s+\\(" (mapconcat 'identity custom-keywords "\s+\\|") "\s+\\)"))
+                (concat "^*+\s+\\("
+                        (mapconcat (lambda (x) (replace-regexp-in-string "(.+?)" "" x))
+                                   custom-keywords "\s+\\|")
+                        "\s+\\)"))
         (setq toc-org-states-regexp "^*+\s+\\(TODO\s+\\|DONE\s+\\)"))
 
       ;; keep only lines starting with *s
