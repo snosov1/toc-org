@@ -107,6 +107,10 @@
   (test-toc-org-raw-toc-gold-test
    "#+STARTUP: showall align\n#+OPTIONS: todo:nil tasks:all tags:nil\n#+EXCLUDE_TAGS: TOC_3\n#+TODO: CANCER SHMANCER | PARTY\n#+TYP_TODO: FII IFF ADS\n\n* Summary                                                             :TOC_3:\n- [[#done-task1][DONE Task1]]\n- [[#todo-task3][TODO Task3]]\n- [[#task2][Task2]]\n  - [[#subtask][SubTask]]\n- [[#task3][Task3]]\n\n* DONE Task1\n  CLOSED: [2017-09-08 Fri 01:46]\n* TODO Task3\n* CANCER Task2\n** FII SubTask\n* CANCER Task3\n"
    "* DONE Task1\n* TODO Task3\n* Task2\n** SubTask\n* Task3\n")
+
+  (test-toc-org-raw-toc-gold-test
+   "#+STARTUP: showall align\n#+OPTIONS: todo:nil tasks:all tags:nil\n#+EXCLUDE_TAGS: TOC_3\n#+TODO: CANCER(c@) SHMANCER | PARTY\n#+TYP_TODO: FII IFF ADS\n\n* Summary                                                             :TOC_3:\n- [[#done-task1][DONE Task1]]\n- [[#todo-task3][TODO Task3]]\n- [[#task2][Task2]]\n  - [[#subtask][SubTask]]\n- [[#task3][Task3]]\n\n* DONE Task1\n  CLOSED: [2017-09-08 Fri 01:46]\n* TODO Task3\n* CANCER Task2\n** FII SubTask\n* CANCER Task3\n"
+   "* DONE Task1\n* TODO Task3\n* Task2\n** SubTask\n* Task3\n")
   )
 
 (ert-deftest test-toc-org-hrefify-gh ()
