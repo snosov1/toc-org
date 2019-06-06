@@ -52,9 +52,9 @@ files on GitHub)"
   :group 'org)
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
-(defconst toc-org-toc-org-regexp "^*.*:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\($\\|[^ ]*?:$\\)"
-  "Regexp to find the heading with the :toc: tag")
-(defconst toc-org-quote-tag-regexp "^*.*:quote:\\($\\|[^ ]*?:$\\)"
+(defconst toc-org-toc-org-regexp ".*?\\(<-- \\)?:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\(\\( -->\\)?$\\|[^ ]*?:\\( -->\\)?$\\)"
+  "Regexp to find the heading with the :toc: tag. It misses the heading symbol which must be added depending on the markup style (org vs markdown).")
+(defconst toc-org-quote-tag-regexp ":quote:\\(\\( -->\\)?$\\|[^ ]*?:\\( -->\\)?$\\)"
   "Regexp to find the heading with the :quote: tag")
 (defconst toc-org-noexport-regexp "\\(^*+\\)\s+.*:noexport\\([@_][0-9]\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the extended version of :noexport: tag")
@@ -104,7 +104,7 @@ the TOC links (even if the style is different from org)."
 opening. The keys are hrefified headings, the values are original
 headings.")
 
-(defun toc-org-raw-toc ()
+(defun toc-org-raw-toc (markdown-syntax-p)
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading and strip
 auxiliary text."
@@ -115,6 +115,19 @@ auxiliary text."
         (toc-org-states-regexp ""))
     (with-temp-buffer
       (insert content)
+
+      ;; preprocess markdown-style headings
+      (when markdown-syntax-p
+        (save-excursion
+          (let ((case-fold-search t))
+            (goto-char (point-min))
+            (while (re-search-forward "^#+ " nil t)
+              (replace-match (concat
+                              (make-string (1- (length (match-string 0))) ?*)
+                              " ") nil nil))
+            (goto-char (point-min))
+            (while (re-search-forward "\\(^*.*\\)<-- \\(:toc[^ ]*:\\) -->\\($\\)" nil t)
+              (replace-match (concat (match-string 1) (match-string 2) (match-string 3)) nil nil)))))
 
       ;; set leave-states-p variable
       (goto-char (point-min))
@@ -139,7 +152,7 @@ auxiliary text."
 
       ;; don't include the TOC itself
       (goto-char (point-min))
-      (re-search-forward toc-org-toc-org-regexp nil t)
+      (re-search-forward (concat "^\\*" toc-org-toc-org-regexp) nil t)
       (beginning-of-line)
       (delete-region (point) (progn (forward-line 1) (point)))
 
@@ -251,13 +264,12 @@ rules."
           (setq ret-path original-path))))
     (cons ret-type ret-path)))
 
-(defun toc-org-hrefify-toc (toc hrefify &optional hash)
+(defun toc-org-hrefify-toc (toc hrefify markdown-syntax-p &optional hash)
   "Format the raw `toc' using the `hrefify' function to transform
 each heading into a link."
   (with-temp-buffer
     (insert toc)
     (goto-char (point-min))
-
     (while
         (progn
           (when (looking-at "\\*")
@@ -280,15 +292,28 @@ each heading into a link."
                    (heading (buffer-substring-no-properties
                              beg end))
                    (hrefified (funcall hrefify heading hash)))
-              (insert "[[")
-              (insert hrefified)
-              (insert "][")
-              (insert
-               (toc-org-format-visible-link
-                (buffer-substring-no-properties
-                 (point) (line-end-position))))
-              (delete-region (point) (line-end-position))
-              (insert "]]")
+
+              (if markdown-syntax-p
+                  (progn
+                    (insert "[")
+                    (insert
+                     (toc-org-format-visible-link
+                      (buffer-substring-no-properties
+                       (point) (line-end-position))))
+                    (delete-region (point) (line-end-position))
+                    (insert "]")
+                    (insert "(")
+                    (insert hrefified)
+                    (insert ")"))
+                (insert "[[")
+                (insert hrefified)
+                (insert "][")
+                (insert
+                 (toc-org-format-visible-link
+                  (buffer-substring-no-properties
+                   (point) (line-end-position))))
+                (delete-region (point) (line-end-position))
+                (insert "]]"))
 
               ;; maintain the hash table, if provided
               (when hash
@@ -342,64 +367,66 @@ Note that :noexport: is also used by Org-mode's exporter, but
 not :noexport_#:."
 
   (interactive)
-  (when (derived-mode-p major-mode 'org-mode)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((case-fold-search t))
-        ;; find the first heading with the :TOC: tag
-        (when (re-search-forward toc-org-toc-org-regexp (point-max) t)
-          (let* ((tag (match-string 1))
-                 (depth (if tag
-                            (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
-                          toc-org-max-depth))
-                 (hrefify-tag (if (and tag (>= (length tag) 4))
-                                  (downcase (substring tag 3))
-                                toc-org-hrefify-default))
-                 (hrefify-string (concat "toc-org-hrefify-" hrefify-tag))
-                 (hrefify (intern-soft hrefify-string))
-                 (put-quote (save-match-data (string-match toc-org-quote-tag-regexp (match-string 0))))
-                 (toc-prefix (if put-quote "#+BEGIN_QUOTE\n" ""))
-                 (toc-suffix (if put-quote "#+END_QUOTE\n" "")))
-            (if hrefify
-                (let ((new-toc
-                       (concat toc-prefix
-                               (toc-org-hrefify-toc
-                                (toc-org-flush-subheadings (toc-org-raw-toc) depth)
-                                hrefify
-                                (when toc-org-hrefify-hash
-                                  (clrhash toc-org-hrefify-hash)))
-                               toc-suffix)))
-                  (unless dry-run
-                    (newline (forward-line 1))
+  (save-excursion
+    (goto-char (point-min))
+    (let* ((case-fold-search t)
+           (markdown-syntax-p (derived-mode-p 'markdown-mode))
+           (heading-symbol-regexp (if markdown-syntax-p "^#" "^\\*")))
+      ;; find the first heading with the :TOC: tag
+      (when (re-search-forward (concat heading-symbol-regexp toc-org-toc-org-regexp) (point-max) t)
+        (let* ((tag (match-string 2))
+               (depth (if tag
+                          (- (aref tag 1) ?0) ;; is there a better way to convert char to number?
+                        toc-org-max-depth))
+               (hrefify-tag (if (and tag (>= (length tag) 4))
+                                (downcase (substring tag 3))
+                              toc-org-hrefify-default))
+               (hrefify-string (concat "toc-org-hrefify-" hrefify-tag))
+               (hrefify (intern-soft hrefify-string))
+               (put-quote (save-match-data (string-match toc-org-quote-tag-regexp (match-string 0))))
+               (toc-prefix (if put-quote (if markdown-syntax-p "```\n" "#+BEGIN_QUOTE\n")  ""))
+               (toc-suffix (if put-quote (if markdown-syntax-p "```\n" "#+END_QUOTE\n") "")))
+          (if hrefify
+              (let ((new-toc
+                     (concat toc-prefix
+                             (toc-org-hrefify-toc
+                              (toc-org-flush-subheadings (toc-org-raw-toc markdown-syntax-p) depth)
+                              hrefify
+                              markdown-syntax-p
+                              (when toc-org-hrefify-hash
+                                (clrhash toc-org-hrefify-hash)))
+                             toc-suffix)))
+                (unless dry-run
+                  (newline (forward-line 1))
 
-                    ;; skip drawers
-                    (let ((end
-                           (save-excursion ;; limit to next heading
-                             (search-forward-regexp "^\\*" (point-max) 'skip))))
-                      (while (re-search-forward toc-org-drawer-regexp end t)
-                        (skip-chars-forward "[:space:]")))
-                    (beginning-of-line)
+                  ;; skip drawers
+                  (let ((end
+                         (save-excursion ;; limit to next heading
+                           (search-forward-regexp heading-symbol-regexp (point-max) 'skip))))
+                    (while (re-search-forward toc-org-drawer-regexp end t)
+                      (skip-chars-forward "[:space:]")))
+                  (beginning-of-line)
 
-                    ;; insert newline if TOC is currently empty
-                    (when (looking-at "^\\*")
-                      (open-line 1))
+                  ;; insert newline if TOC is currently empty
+                  (when (looking-at heading-symbol-regexp)
+                    (open-line 1))
 
-                    ;; find TOC boundaries
-                    (let ((beg (point))
-                          (end
-                           (save-excursion
-                             (when (search-forward-regexp "^\\*" (point-max) 'skip)
-                               (forward-line -1))
-                             (end-of-line)
-                             (point))))
-                      ;; update the TOC, but only if it's actually different
-                      ;; from the current one
-                      (unless (equal
-                               (buffer-substring-no-properties beg end)
-                               new-toc)
-                        (delete-region beg end)
-                        (insert new-toc)))))
-              (message (concat "Hrefify function " hrefify-string " is not found")))))))))
+                  ;; find TOC boundaries
+                  (let ((beg (point))
+                        (end
+                         (save-excursion
+                           (when (search-forward-regexp heading-symbol-regexp (point-max) 'skip)
+                             (forward-line -1))
+                           (end-of-line)
+                           (point))))
+                    ;; update the TOC, but only if it's actually different
+                    ;; from the current one
+                    (unless (equal
+                             (buffer-substring-no-properties beg end)
+                             new-toc)
+                      (delete-region beg end)
+                      (insert new-toc)))))
+            (message (concat "Hrefify function " hrefify-string " is not found"))))))))
 
 ;;;###autoload
 (defun toc-org-enable ()
