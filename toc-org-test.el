@@ -141,13 +141,15 @@
   (should (equal (toc-org-format-visible-link "Context Extraction Service [60%]") "Context Extraction Service")))
 
 (ert-deftest test-toc-org-hrefify-toc ()
-  (let ((hash (make-hash-table :test 'equal)))
-    (should (equal (toc-org-hrefify-toc "* About\n"
-                                        (lambda (str &optional hash) (upcase str))
-                                        nil
-                                        hash)
-                   "- [[ABOUT][About]]\n"))
-    (should (equal (gethash "ABOUT" hash) "About")))
+  (dolist (params '((nil . "- [[ABOUT][About]]\n") ('t . "- [About](ABOUT)\n")))
+    (let ((hash (make-hash-table :test 'equal)))
+      (should (equal (toc-org-hrefify-toc "* About\n"
+                                          (lambda (str &optional hash) (upcase str))
+                                          (car params)
+                                          hash)
+                     (cdr params)))
+      (should (equal (gethash "ABOUT" hash) "About"))))
+
   ;; check trailing space: https://github.com/snosov1/toc-org/pull/31
   (let ((hash (make-hash-table :test 'equal)))
     (should (equal (toc-org-hrefify-toc "* About  \n"
@@ -238,4 +240,24 @@
     (test-toc-org-insert-toc-gold-test
      "* H1\n* TODO H2\n* TOC           :TOC:\n \n"
      "* H1\n* TODO H2\n* TOC           :TOC:\n- [[#h1][H1]]\n- [[#h2][H2]]\n")
+    ))
+
+(ert-deftest test-toc-org-insert-toc-markdown ()
+  "Test the `toc-org-insert-toc' function"
+
+  (defun test-toc-org-insert-toc-gold-test-markdown (content gold)
+    (with-temp-buffer
+      (markdown-mode)
+      (insert content)
+      (toc-org-insert-toc)
+      (should (equal
+               (buffer-substring-no-properties
+                (point-min) (point-max))
+               gold))))
+  (declare-function test-toc-org-insert-toc-gold-test-markdown "toc-org") ;; suppress compiler warning
+
+  (let ((beg "# About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n# Hello\n## Good-bye\n### Salut\n# Table of Contents                                                     "))
+    (test-toc-org-insert-toc-gold-test-markdown
+     (concat beg "<-- :TOC: -->")
+     "# About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n# Hello\n## Good-bye\n### Salut\n# Table of Contents                                                     <-- :TOC: -->\n- [About](#about)\n- [Hello](#hello)\n  - [Good-bye](#good-bye)\n")
     ))
