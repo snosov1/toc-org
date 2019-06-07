@@ -245,6 +245,8 @@
 (ert-deftest test-toc-org-insert-toc-markdown ()
   "Test the `toc-org-insert-toc' function"
 
+  (define-derived-mode markdown-mode text-mode "Markdown")
+
   (defun test-toc-org-insert-toc-gold-test-markdown (content gold)
     (with-temp-buffer
       (markdown-mode)
