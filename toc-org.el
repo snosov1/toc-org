@@ -80,6 +80,17 @@ files on GitHub)"
 equal to `org-drawer-regexp'. However, some older versions of
 org (notably, 8.2.10) restrict the values that can be placed
 between the colons. So, the value here is set explicitly.")
+(defconst toc-org-markdown-link-regexp ;; copy-paste from markdown-mode
+  "\\(!\\)?\\(\\[\\)\\([^]^][^]]*\\|\\)\\(\\]\\)\\((\\)\\([^)]*?\\)\\(?:\\s-+\\(\"[^\"]*\"\\)\\)?\\()\\)"
+  "Regular expression for a [text](file) or an image link ![text](file).
+Group 1 matches the leading exclamation point (optional).
+Group 2 matches the opening square bracket.
+Group 3 matches the text inside the square brackets.
+Group 4 matches the closing square bracket.
+Group 5 matches the opening parenthesis.
+Group 6 matches the URL.
+Group 7 matches the title (optional).
+Group 8 matches the closing parenthesis.")
 
 (defcustom toc-org-max-depth 2
   "Maximum depth of the headings to use in the table of
@@ -427,6 +438,25 @@ not :noexport_#:."
                       (delete-region beg end)
                       (insert new-toc)))))
             (message (concat "Hrefify function " hrefify-string " is not found"))))))))
+
+(defun toc-org-follow-markdown-link ()
+  "Follow the markdown link (mimics `org-open-at-point')"
+  (interactive)
+  (when (thing-at-point-looking-at toc-org-markdown-link-regexp)
+    (let ((pos (point)))
+      (goto-char (point-min))
+      (if (re-search-forward (concat "^#+\s+" (match-string-no-properties 3)) (point-max) t)
+          (beginning-of-line)
+        (goto-char pos)))))
+
+(defun toc-org-markdown-follow-thing-at-point (arg)
+  "Try to follow the link with `toc-org-follow-markdown-link',
+fallback to `markdown-follow-thing-at-point' on failure"
+  (interactive "P")
+  (let ((pos (point)))
+    (toc-org-follow-markdown-link)
+    (when (equal pos (point))
+      (markdown-follow-thing-at-point arg))))
 
 ;;;###autoload
 (defun toc-org-enable ()
