@@ -256,7 +256,9 @@
                (buffer-substring-no-properties
                 (point-min) (point-max))
                gold))))
-  (declare-function test-toc-org-insert-toc-gold-test-markdown "toc-org") ;; suppress compiler warning
+  ;; suppress compiler warnings
+  (declare-function test-toc-org-insert-toc-gold-test-markdown "toc-org")
+  (declare-function markdown-mode "toc-org")
 
   (let ((beg "# About\n:TOC:\n drawer\n:END:\n\ntoc-org is a utility to have an up-to-date table of contents in the\norg files without exporting (useful primarily for readme files on\nGitHub).\n\nIt is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.\n:TOC:\n  drawer\n:END:\n# Hello\n## Good-bye\n### Salut\n# Table of Contents                                                     "))
     (test-toc-org-insert-toc-gold-test-markdown
