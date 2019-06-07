@@ -44,6 +44,7 @@
 ;;; Code:
 
 (require 'org)
+(require 'thingatpt)
 
 (defgroup toc-org nil
   "toc-org is a utility to have an up-to-date table of contents
@@ -52,9 +53,9 @@ files on GitHub)"
   :group 'org)
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
-(defconst toc-org-toc-org-regexp ".*?\\(<-- \\)?:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\(\\( -->\\)?$\\|[^ ]*?:\\( -->\\)?$\\)"
+(defconst toc-org-toc-org-regexp ".*?\\(<--\s+\\)?:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\(\\(\s+-->\\)?$\\|[^ ]*?:\\(\s+-->\\)?$\\)"
   "Regexp to find the heading with the :toc: tag. It misses the heading symbol which must be added depending on the markup style (org vs markdown).")
-(defconst toc-org-quote-tag-regexp ":quote:\\(\\( -->\\)?$\\|[^ ]*?:\\( -->\\)?$\\)"
+(defconst toc-org-quote-tag-regexp ":quote:\\(\\(\s+-->\\)?$\\|[^ ]*?:\\(\s+-->\\)?$\\)"
   "Regexp to find the heading with the :quote: tag")
 (defconst toc-org-noexport-regexp "\\(^*+\\)\s+.*:noexport\\([@_][0-9]\\)?:\\($\\|[^ ]*?:$\\)"
   "Regexp to find the extended version of :noexport: tag")
@@ -455,7 +456,7 @@ fallback to `markdown-follow-thing-at-point' on failure"
   (interactive "P")
   (let ((pos (point)))
     (toc-org-follow-markdown-link)
-    (when (equal pos (point))
+    (when (and (equal pos (point)) (fboundp 'markdown-follow-thing-at-point))
       (markdown-follow-thing-at-point arg))))
 
 ;;;###autoload
