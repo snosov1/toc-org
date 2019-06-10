@@ -24,8 +24,8 @@
 
 ;;; Commentary:
 
-;; toc-org helps you to have an up-to-date table of contents in org files
-;; without exporting (useful primarily for readme files on GitHub).
+;; toc-org helps you to have an up-to-date table of contents in org or markdown
+;; files without exporting (useful primarily for readme files on GitHub).
 
 ;; NOTE: Previous name of the package is org-toc. It was changed because of a
 ;; name conflict with one of the org contrib modules.
@@ -33,7 +33,11 @@
 ;; After installation put into your .emacs file something like
 
 ;; (if (require 'toc-org nil t)
-;;     (add-hook 'org-mode-hook 'toc-org-enable)
+;;     (add-hook 'org-mode-hook 'toc-org-mode)
+
+;;     ;; enable in markdown, too
+;;     (add-hook 'markdown-mode-hook 'toc-org-mode)
+;;     (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point)
 ;;   (warn "toc-org not found"))
 
 ;; And every time you'll be saving an org file, the first headline with a :TOC:
@@ -137,6 +141,9 @@ auxiliary text."
               (replace-match (concat
                               (make-string (1- (length (match-string 0))) ?*)
                               " ") nil nil))
+            (goto-char (point-min))
+            (while (re-search-forward "\s+#+$" nil t)
+              (replace-match "" nil nil))
             (goto-char (point-min))
             (while (re-search-forward "\\(^*.*\\)<-- \\(:toc[^ ]*:\\) -->\\($\\)" nil t)
               (replace-match (concat (match-string 1) (match-string 2) (match-string 3)) nil nil)))))

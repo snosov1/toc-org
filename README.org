@@ -2,11 +2,11 @@
 
 * About
 
-toc-org helps you to have an up-to-date table of contents in org files without
+=toc-org= helps you to have an up-to-date table of contents in org files without
 exporting (useful primarily for readme files on GitHub).
 
 It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files. Since
-recently, it, actually, works in [[Markdown support][markdown]], too!
+recently, =toc-org=, actually, works in [[Markdown support][markdown]], too!
 
 *NOTE:* Previous name of the package is =org-toc=. It was changed because of a
 name conflict with one of the org contrib modules.
@@ -126,8 +126,7 @@ Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
 
 You can also enable the mode in Markdown files and get pretty much the same
 functionality. The package will
-1. Look for '#'s instead of '*'s as heading markers (so, markdown syntax with
-   trailing pounds, like, =## Heading 2 ##= is not supported).
+1. Look for '#'s instead of '*'s as heading markers.
 2. Expect the =:TOC:= tag to appear as comment, like, =<-- :TOC: -->=
 3. Format the links and the quote block according to Markdown syntax
 
