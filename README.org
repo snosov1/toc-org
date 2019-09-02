@@ -2,10 +2,11 @@
 
 * About
 
-toc-org helps you to have an up-to-date table of contents in org files without
+=toc-org= helps you to have an up-to-date table of contents in org files without
 exporting (useful primarily for readme files on GitHub).
 
-It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files.
+It is similar to the [[https://github.com/ardumont/markdown-toc][markdown-toc]] package, but works for org files. Since
+recently, =toc-org=, actually, works in [[Markdown support][markdown]], too!
 
 *NOTE:* Previous name of the package is =org-toc=. It was changed because of a
 name conflict with one of the org contrib modules.
@@ -21,6 +22,7 @@ name conflict with one of the org contrib modules.
   - [[#exclude-headings][Exclude headings]]
   - [[#quote-table-of-contents][Quote table of contents]]
   - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
+- [[#markdown-support][Markdown support]]
 - [[#different-href-styles][Different href styles]]
 - [[#example][Example]]
 #+END_QUOTE
@@ -37,6 +39,10 @@ repository and then put the following snippet in your ~/.emacs file
 #+BEGIN_SRC elisp
   (if (require 'toc-org nil t)
       (add-hook 'org-mode-hook 'toc-org-mode)
+
+      ;; enable in markdown, too
+      (add-hook 'markdown-mode-hook 'toc-org-mode)
+      (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
     (warn "toc-org not found"))
 #+END_SRC
 
@@ -52,6 +58,10 @@ repository and then put the following snippet in your ~/.emacs file
     (add-to-list 'load-path "~/.emacs.d/toc-org")
     (if (require 'toc-org nil t)
         (add-hook 'org-mode-hook 'toc-org-mode)
+
+        ;; enable in markdown, too
+        (add-hook 'markdown-mode-hook 'toc-org-mode)
+        (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
       (warn "toc-org not found"))
   #+END_SRC
 
@@ -111,6 +121,33 @@ In your emacs' setup, you can bind a tag =:TOC:= to a binding =T=:
 #+END_SRC
 
 Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
+
+* Markdown support
+
+You can also enable the mode in Markdown files and get pretty much the same
+functionality. The package will
+1. Look for '#'s instead of '*'s as heading markers.
+2. Expect the =:TOC:= tag to appear as comment, like, =<-- :TOC: -->=
+3. Format the links and the quote block according to Markdown syntax
+
+Example:
+
+#+BEGIN_SRC markdown
+  # About
+  # Table of Contents                                    <-- :TOC: -->
+  - [About](#about)
+  - [Installation](#installation)
+    - [via package.el](#via-packageel)
+    - [Manual](#manual)
+  - [Use](#use)
+  - [Example](#example)
+
+  # Installation
+  ## via package.el
+  ## Manual
+  # Use
+  # Example
+#+END_SRC
 
 * Different href styles
 
