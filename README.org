@@ -84,7 +84,7 @@ In addition to the simple :TOC: tag, you can also use the following tag formats:
 You can also use =@= as separator, instead of =_=.
 
 It's possible to set the default values of max depth and hrefify function with
-`toc-org-max-depth` and `toc-org-hrefify-default` variables. But, note, that if
+=toc-org-max-depth= and =toc-org-hrefify-default= variables. But, note, that if
 you do this outside of the org file itself, then you can face conflicts if you 
 work on the same file collaboratively with someone else, as your default configs 
 can vary.
