@@ -115,6 +115,12 @@ the TOC links (even if the style is different from org)."
   :type 'boolean
   :group 'toc-org)
 
+(defcustom toc-org-insert-silently nil
+  "If non-nil, hide body of the table of contents after inserting
+new contents."
+  :type 'boolean
+  :group 'toc-org)
+
 (defvar-local toc-org-hrefify-hash nil
   "Buffer local hash-table that is used to enable links
 opening. The keys are hrefified headings, the values are original
@@ -444,7 +450,8 @@ not :noexport_#:."
                              (buffer-substring-no-properties beg end)
                              new-toc)
                       (delete-region beg end)
-                      (insert new-toc)))))
+                      (insert new-toc)
+                      (if toc-org-insert-silently (outline-hide-body))))))
             (message (concat "Hrefify function " hrefify-string " is not found"))))))))
 
 (defun toc-org-follow-markdown-link ()
