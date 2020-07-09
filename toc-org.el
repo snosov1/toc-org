@@ -451,7 +451,7 @@ not :noexport_#:."
                              new-toc)
                       (delete-region beg end)
                       (insert new-toc)
-                      (if toc-org-insert-silently (outline-hide-body))))))
+                      (if toc-org-insert-silently (outline-hide-entry))))))
             (message (concat "Hrefify function " hrefify-string " is not found"))))))))
 
 (defun toc-org-follow-markdown-link ()
