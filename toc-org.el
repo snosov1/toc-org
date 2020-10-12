@@ -183,15 +183,13 @@ auxiliary text."
 
       ;; strip COMMENT headlines
       (goto-char (point-min))
-      (let (backup-case-fold-search case-fold-search)
-        (setq case-fold-search nil)
+      (let ((case-fold-search nil))
         (while (re-search-forward toc-org-COMMENT-regexp nil t)
           (let ((skip-depth (concat (match-string 1) "*")))
             (while (progn
                      (beginning-of-line)
                      (delete-region (point) (min (1+ (line-end-position)) (point-max)))
-                     (string-prefix-p skip-depth (or (current-word) ""))))))
-        (setq case-fold-search backup-case-fold-search))
+                     (string-prefix-p skip-depth (or (current-word) "")))))))
 
       ;; strip headings with :noexport: tag
       (goto-char (point-min))
