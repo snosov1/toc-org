@@ -311,15 +311,13 @@ each heading into a link."
                    (end (line-end-position))
                    (heading (buffer-substring-no-properties
                              beg end))
-                   (hrefified (funcall hrefify heading hash)))
+                   (hrefified (funcall hrefify heading hash))
+		   (visible-link (toc-org-format-visible-link heading)))
 
               (if markdown-syntax-p
                   (progn
                     (insert "[")
-                    (insert
-                     (toc-org-format-visible-link
-                      (buffer-substring-no-properties
-                       (point) (line-end-position))))
+                    (insert visible-link)
                     (delete-region (point) (line-end-position))
                     (insert "]")
                     (insert "(")
@@ -328,16 +326,13 @@ each heading into a link."
                 (insert "[[")
                 (insert hrefified)
                 (insert "][")
-                (insert
-                 (toc-org-format-visible-link
-                  (buffer-substring-no-properties
-                   (point) (line-end-position))))
+                (insert visible-link)
                 (delete-region (point) (line-end-position))
                 (insert "]]"))
 
               ;; maintain the hash table, if provided
               (when hash
-                (puthash hrefified heading hash)))
+                (puthash hrefified visible-link hash)))
             (= 0 (forward-line 1)))))
 
     (buffer-substring-no-properties
