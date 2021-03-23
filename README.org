@@ -38,11 +38,12 @@ repository and then put the following snippet in your ~/.emacs file
 
 #+BEGIN_SRC elisp
   (if (require 'toc-org nil t)
-      (add-hook 'org-mode-hook 'toc-org-mode)
+      (progn
+        (add-hook 'org-mode-hook 'toc-org-mode)
 
-      ;; enable in markdown, too
-      (add-hook 'markdown-mode-hook 'toc-org-mode)
-      (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
+        ;; enable in markdown, too
+        (add-hook 'markdown-mode-hook 'toc-org-mode)
+        (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
     (warn "toc-org not found"))
 #+END_SRC
 
@@ -55,13 +56,13 @@ repository and then put the following snippet in your ~/.emacs file
   #+END_SRC
 - Put this in your ~/.emacs file
   #+BEGIN_SRC elisp
-    (add-to-list 'load-path "~/.emacs.d/toc-org")
     (if (require 'toc-org nil t)
-        (add-hook 'org-mode-hook 'toc-org-mode)
+        (progn
+          (add-hook 'org-mode-hook 'toc-org-mode)
 
-        ;; enable in markdown, too
-        (add-hook 'markdown-mode-hook 'toc-org-mode)
-        (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
+          ;; enable in markdown, too
+          (add-hook 'markdown-mode-hook 'toc-org-mode)
+          (define-key markdown-mode-map (kbd "\C-c\C-o") 'toc-org-markdown-follow-thing-at-point))
       (warn "toc-org not found"))
   #+END_SRC
 
