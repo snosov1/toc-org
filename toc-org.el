@@ -285,7 +285,7 @@ rules."
           (setq ret-path original-path))))
     (cons ret-type ret-path)))
 
-(defun toc-org-hrefify-toc (toc hrefify markdown-syntax-p &optional hash)
+(defun toc-org-hrefify-toc (toc hrefify markdown-syntax-p list-offset &optional hash)
   "Format the raw `toc' using the `hrefify' function to transform
 each heading into a link."
   (with-temp-buffer
@@ -298,9 +298,7 @@ each heading into a link."
 
             (while (looking-at "\\*")
               (delete-char 1)
-              (insert (make-string
-                       (+ 2 (or (bound-and-true-p org-list-indent-offset) 0))
-                       ?\s)))
+              (insert (make-string (+ 2 list-offset) ?\s)))
 
             (insert "-")
             (skip-chars-forward " ")
@@ -409,6 +407,7 @@ not :noexport_#:."
                               (toc-org-flush-subheadings (toc-org-raw-toc markdown-syntax-p) depth)
                               hrefify
                               markdown-syntax-p
+                              (or (bound-and-true-p org-list-indent-offset) 0)
                               (when toc-org-hrefify-hash
                                 (clrhash toc-org-hrefify-hash)))
                              toc-suffix)))
