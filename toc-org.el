@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Sergei Nosov
 
 ;; Author: Sergei Nosov <sergei.nosov [at] gmail.com>
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: org-mode org-toc toc-org org toc table of contents
 ;; URL: https://github.com/snosov1/toc-org
 
