@@ -59,7 +59,9 @@ files on GitHub)"
 
 ;; just in case, simple regexp "^*.*:toc:\\($\\|[^ ]*:$\\)"
 (defconst toc-org-toc-org-regexp ".*?\\(<--\s+\\)?:toc\\([@_][0-9]\\|\\([@_][0-9][@_][a-zA-Z]+\\)\\)?:\\(\\(\s+-->\\)?$\\|[^ ]*?:\\(\s+-->\\)?$\\)"
-  "Regexp to find the heading with the :toc: tag. It misses the heading symbol which must be added depending on the markup style (org vs markdown).")
+  "Regexp to find the heading with the :toc: tag.
+It misses the heading symbol which must be added depending on the
+markup style (org vs markdown).")
 (defconst toc-org-quote-tag-regexp ":quote:\\(\\(\s+-->\\)?$\\|[^ ]*?:\\(\s+-->\\)?$\\)"
   "Regexp to find the heading with the :quote: tag")
 (defconst toc-org-noexport-regexp "\\(^*+\\)\s+.*:noexport\\([@_][0-9]\\)?:\\($\\|[^ ]*?:$\\)"
