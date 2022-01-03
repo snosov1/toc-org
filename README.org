@@ -30,6 +30,7 @@ name conflict with one of the org contrib modules.
 * Installation
 ** via package.el
 
+[[https://elpa.nongnu.org/nongnu/toc-org.html][https://elpa.nongnu.org/nongnu/toc-org.svg]]
 [[http://melpa.org/#/toc-org][file:http://melpa.org/packages/toc-org-badge.svg]]
 
 This is the simplest method if you have the package.el module (built-in since
