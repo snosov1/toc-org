@@ -138,6 +138,9 @@ auxiliary text."
         (save-excursion
           (let ((case-fold-search t))
             (goto-char (point-min))
+            (while (re-search-forward "^\\*" nil t)
+              (replace-match "" nil nil))
+            (goto-char (point-min))
             (while (re-search-forward "^#+ " nil t)
               (replace-match (concat
                               (make-string (1- (length (match-string 0))) ?*)
