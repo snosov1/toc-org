@@ -135,14 +135,14 @@ Now =C-c C-q T RET= and you are done putting the =:TOC:= entry.
 You can also enable the mode in Markdown files and get pretty much the same
 functionality. The package will
 1. Look for '#'s instead of '*'s as heading markers.
-2. Expect the =:TOC:= tag to appear as comment, like, =<-- :TOC: -->=
+2. Expect the =:TOC:= tag to appear as comment, like, =<!-- :TOC: -->=
 3. Format the links and the quote block according to Markdown syntax
 
 Example:
 
 #+BEGIN_SRC markdown
   # About
-  # Table of Contents                                    <-- :TOC: -->
+  # Table of Contents                                    <!-- :TOC: -->
   - [About](#about)
   - [Installation](#installation)
     - [via package.el](#via-packageel)
