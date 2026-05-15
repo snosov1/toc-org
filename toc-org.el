@@ -121,6 +121,36 @@ the TOC links (even if the style is different from org)."
 opening. The keys are hrefified headings, the values are original
 headings.")
 
+(defcustom toc-org-side-window-side 'left
+  "Side of the frame where the TOC side window is displayed.
+Possible values are `left', `right', `top', and `bottom'."
+  :type '(choice (const left)
+                 (const right)
+                 (const top)
+                 (const bottom))
+  :group 'toc-org)
+
+(defcustom toc-org-side-window-size 35
+  "Size of the TOC side window.
+This controls the width for `left'/`right' sides, and the height
+for `top'/`bottom' sides.  An integer means the number of columns
+or lines; a float between 0 and 1 means a fraction of the frame
+size (e.g. 0.3 for 30%)."
+  :type 'number
+  :group 'toc-org)
+
+(defconst toc-org-navigation-pane-buffer-name "*toc-org-navigation-pane*"
+  "Name of the buffer used for the TOC navigation pane.")
+
+(defvar-local toc-org--toc-buffer nil
+  "TOC navigation pane buffer associated with this buffer.")
+
+(defvar-local toc-org--nav-source-buffer nil
+  "Source buffer associated with this navigation pane buffer.")
+
+(defvar-local toc-org--nav-max-depth nil
+  "Max depth shown in this navigation pane, or nil to use the default.")
+
 (defun toc-org-raw-toc (markdown-syntax-p)
   "Return the \"raw\" table of contents of the current file,
 i.e. simply flush everything that's not a heading and strip
@@ -179,9 +209,9 @@ auxiliary text."
 
       ;; don't include the TOC itself
       (goto-char (point-min))
-      (re-search-forward (concat "^\\*" toc-org-toc-org-regexp) nil t)
-      (beginning-of-line)
-      (delete-region (point) (progn (forward-line 1) (point)))
+      (when (re-search-forward (concat "^\\*" toc-org-toc-org-regexp) nil t)
+        (beginning-of-line)
+        (delete-region (point) (progn (forward-line 1) (point))))
 
       ;; strip states
       (unless leave-states-p
@@ -484,16 +514,283 @@ fallback to `markdown-follow-thing-at-point' on failure"
     (setq org-link-translation-function 'toc-org-unhrefify)
     (toc-org-insert-toc t)))
 
+(defvar toc-org-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c t") #'toc-org-navigation-pane)
+    map)
+  "Keymap for `toc-org-mode'.")
+
 ;;;###autoload
 (define-minor-mode toc-org-mode
   "Toggle `toc-org' in this buffer."
   :group toc-org
+  :keymap toc-org-mode-map
   (if toc-org-mode
       (toc-org-enable)
     (remove-hook 'before-save-hook 'toc-org-insert-toc t)
     ;; we would've set `org-link-translation-function' only if it's been nil
     (when (equal org-link-translation-function 'toc-org-unhrefify)
       (setq org-link-translation-function nil))))
+
+(defun toc-org--effective-max-depth ()
+  "Return the effective TOC max depth.
+Uses the depth from the :TOC_N: tag if present, else `toc-org-max-depth'."
+  (save-excursion
+    (goto-char (point-min))
+    (let* ((case-fold-search t)
+           (heading-re (if (derived-mode-p 'markdown-mode) "^#" "^\\*")))
+      (if (re-search-forward (concat heading-re toc-org-toc-org-regexp) nil t)
+          (let ((tag (match-string 2)))
+            (if tag (- (aref tag 1) ?0) toc-org-max-depth))
+        toc-org-max-depth))))
+
+(defun toc-org--close-toc-pane ()
+  "Close TOC side windows whose source buffers are no longer visible."
+  (let ((any-toc-p nil))
+    (dolist (buf (buffer-list))
+      (when (buffer-live-p buf)
+        (with-current-buffer buf
+          (when (and toc-org--toc-buffer
+                     (buffer-live-p toc-org--toc-buffer))
+            (if (get-buffer-window buf)
+                (setq any-toc-p t)
+              (kill-buffer toc-org--toc-buffer)
+              (setq toc-org--toc-buffer nil)
+              (remove-hook 'after-save-hook #'toc-org--refresh-navigation-pane t))))))
+    (unless any-toc-p
+      (remove-hook 'buffer-list-update-hook #'toc-org--close-toc-pane))))
+
+(defun toc-org--close-toc-pane-on-kill ()
+  "Close the TOC side window when the source buffer is killed."
+  (when (and toc-org--toc-buffer
+             (buffer-live-p toc-org--toc-buffer))
+    (kill-buffer toc-org--toc-buffer)
+    (setq toc-org--toc-buffer nil))
+  (remove-hook 'after-save-hook #'toc-org--refresh-navigation-pane t))
+
+(defun toc-org--refresh-navigation-pane (&optional max-depth)
+  "Refresh the TOC navigation pane content for the current source buffer."
+  (when (and toc-org--toc-buffer
+             (buffer-live-p toc-org--toc-buffer))
+    (let* ((source-buf   (current-buffer))
+           (toc-buf      toc-org--toc-buffer)
+           (source-file  (buffer-file-name source-buf))
+           (markdown-p   (derived-mode-p 'markdown-mode))
+           (raw-toc      (toc-org-flush-subheadings
+                          (toc-org-raw-toc markdown-p)
+                          (or max-depth
+                              (with-current-buffer toc-org--toc-buffer
+                                                   toc-org--nav-max-depth)
+                              (toc-org--effective-max-depth))))
+           (win          (get-buffer-window toc-buf))
+           (saved-point  (when win (window-point win))))
+      (with-current-buffer toc-buf
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (dolist (line (split-string raw-toc "\n" t))
+            (when (string-match "^\\(\\*+\\)[ \t]+\\(.*\\)" line)
+              (let* ((depth    (1- (length (match-string 1 line))))
+                     (title    (replace-regexp-in-string
+                                 toc-org-statistics-cookies-regexp ""
+                                 (match-string 2 line)))
+                     (indent   (make-string (* 2 depth) ?\s))
+                     (line-num (with-current-buffer source-buf
+                                 (save-excursion
+                                   (goto-char (point-min))
+                                   (when (re-search-forward
+                                          (concat (if markdown-p
+                                                      "^#+[ \t]+"
+                                                    "^\\*+[ \t]+\\(?:[A-Z]+[ \t]+\\)?\\(?:\\[#.\\][ \t]+\\)?")
+                                                  (regexp-quote title))
+                                          nil t)
+                                     (line-number-at-pos))))))
+                (when line-num
+                  (insert indent "- "
+                          (format "[[file:%s::%d][%s]]"
+                                  source-file line-num title)
+                          "\n")))))
+          (if (and win saved-point)
+              (set-window-point win (min saved-point (point-max)))
+            (goto-char (point-min))))))))
+
+(defun toc-org--goto-current-heading (&optional max-depth)
+  "In the TOC buffer, position point at the entry for the heading at point."
+  (when (and toc-org--toc-buffer
+             (buffer-live-p toc-org--toc-buffer))
+    (let* ((toc-buf    toc-org--toc-buffer)
+           (markdown-p (derived-mode-p 'markdown-mode))
+           (heading-re (if markdown-p "^\\(#+\\)[ \t]+" "^\\(\\*+\\)[ \t]+"))
+           (max-depth  (or max-depth (toc-org--effective-max-depth)))
+           (line-num
+            (save-excursion
+              (end-of-line)
+              (catch 'found
+                (while (re-search-backward heading-re nil t)
+                  (when (<= (length (match-string 1)) max-depth)
+                    (throw 'found (line-number-at-pos))))))))
+      (when line-num
+        (with-current-buffer toc-buf
+          (goto-char (point-min))
+          (when (re-search-forward (format "::%d\\]\\[" line-num) nil t)
+            (beginning-of-line)))))))
+
+(defun toc-org--follow-link ()
+  "Follow the first org link on the current line."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (when (re-search-forward "\\[\\[" (line-end-position) t)
+      (org-open-at-point))))
+
+(defun toc-org--nav-show-heading ()
+  "Move point in the source buffer to the heading on the current nav-pane line."
+  (when (and toc-org--nav-source-buffer
+             (buffer-live-p toc-org--nav-source-buffer))
+    (save-excursion
+      (beginning-of-line)
+      (when (re-search-forward "::\\([0-9]+\\)\\]\\[" (line-end-position) t)
+        (let ((line-num (string-to-number (match-string 1)))
+              (source-win (get-buffer-window toc-org--nav-source-buffer)))
+          (when source-win
+            (with-selected-window source-win
+              (goto-char (point-min))
+              (forward-line (1- line-num))
+              (recenter))))))))
+
+(defun toc-org--nav-next ()
+  "Move to next nav pane entry and show it in the source buffer."
+  (interactive)
+  (forward-line 1)
+  (toc-org--nav-show-heading))
+
+(defun toc-org--nav-prev ()
+  "Move to previous nav pane entry and show it in the source buffer."
+  (interactive)
+  (forward-line -1)
+  (toc-org--nav-show-heading))
+
+(defun toc-org--max-heading-depth ()
+  "Return the maximum heading depth present in the current buffer's TOC."
+  (let ((raw (toc-org-raw-toc (derived-mode-p 'markdown-mode)))
+        (depth 0))
+    (dolist (line (split-string raw "\n" t))
+      (when (string-match "^\\(\\*+\\)" line)
+        (setq depth (max depth (length (match-string 1 line))))))
+    depth))
+
+(defun toc-org--nav-change-depth (delta)
+  "Change the navigation pane max depth by DELTA and refresh."
+  (when (and toc-org--nav-source-buffer
+             (buffer-live-p toc-org--nav-source-buffer))
+    (let* ((current (or toc-org--nav-max-depth
+                        (with-current-buffer toc-org--nav-source-buffer
+                          (toc-org--effective-max-depth))))
+           (max-possible (with-current-buffer toc-org--nav-source-buffer
+                           (toc-org--max-heading-depth)))
+           (new-depth (max 1 (min (+ current delta) max-possible))))
+      (setq toc-org--nav-max-depth new-depth)
+      (with-current-buffer toc-org--nav-source-buffer
+        (toc-org--refresh-navigation-pane new-depth)))))
+
+(defun toc-org--nav-increase-depth ()
+  "Increase the max depth shown in the navigation pane."
+  (interactive)
+  (toc-org--nav-change-depth 1))
+
+(defun toc-org--nav-decrease-depth ()
+  "Decrease the max depth shown in the navigation pane."
+  (interactive)
+  (toc-org--nav-change-depth -1))
+
+;;;###autoload
+(defun toc-org-navigation-pane ()
+  "Show the table of contents of the current buffer as a side pane.
+
+Works as a toggle: calling it again closes the pane.
+
+The TOC buffer is read-only with these single-letter shortcuts:
+  n / p           next / previous line
+  f / b           forward / backward character
+  k               close the pane
+  RET             follow the link on the current line
+  M-n / M-<down>  move to next entry and show it in the source buffer
+  M-p / M-<up>    move to previous entry and show it in the source buffer
+  = / +           increase max depth
+  -               decrease max depth
+
+Customize `toc-org-side-window-side' to set which side the pane
+appears on (left, right, top, or bottom).  Customize
+`toc-org-side-window-size' to set the width or height: an integer
+for a fixed number of columns/lines, or a float (0.0–1.0) for a
+fraction of the frame size."
+  (interactive)
+  (cond
+   ((string= (buffer-name) toc-org-navigation-pane-buffer-name)
+    (kill-buffer-and-window))
+   ((and toc-org--toc-buffer
+         (buffer-live-p toc-org--toc-buffer)
+         (get-buffer-window toc-org--toc-buffer))
+    (kill-buffer toc-org--toc-buffer)
+    (setq toc-org--toc-buffer nil)
+    (remove-hook 'kill-buffer-hook #'toc-org--close-toc-pane-on-kill t)
+    (remove-hook 'after-save-hook  #'toc-org--refresh-navigation-pane t))
+   (t
+    (let* ((source-buf  (current-buffer))
+           (source-file (buffer-file-name source-buf))
+           (max-depth   (toc-org--effective-max-depth))
+           (win-buf     (get-buffer-create toc-org-navigation-pane-buffer-name)))
+      (if (not source-file)
+          (progn
+            (kill-buffer win-buf)
+            (message "toc-org: Buffer is not visiting a file."))
+        (with-current-buffer win-buf
+          (org-mode)
+          (display-line-numbers-mode -1)
+          (setq-local mode-line-format nil)
+          (setq-local buffer-read-only t)
+          (setq-local toc-org--nav-source-buffer source-buf)
+          (setq-local header-line-format
+                      (format " Table of Contents - %s" (buffer-name source-buf)))
+          (let ((map (make-sparse-keymap)))
+            (set-keymap-parent map (current-local-map))
+            (define-key map "n" #'next-line)
+            (define-key map "p" #'previous-line)
+            (define-key map "f" #'forward-char)
+            (define-key map "b" #'backward-char)
+            (define-key map "k" #'kill-buffer-and-window)
+            (define-key map (kbd "RET") #'toc-org--follow-link)
+            (define-key map (kbd "M-n") #'toc-org--nav-next)
+            (define-key map (kbd "M-p") #'toc-org--nav-prev)
+            (define-key map (kbd "M-<down>") #'toc-org--nav-next)
+            (define-key map (kbd "M-<up>") #'toc-org--nav-prev)
+            (define-key map "=" #'toc-org--nav-increase-depth)
+            (define-key map "+" #'toc-org--nav-increase-depth)
+            (define-key map "-" #'toc-org--nav-decrease-depth)
+            (use-local-map map)))
+        (with-current-buffer source-buf
+          (setq toc-org--toc-buffer win-buf)
+          (add-hook 'kill-buffer-hook  #'toc-org--close-toc-pane-on-kill nil t)
+          (add-hook 'after-save-hook   #'toc-org--refresh-navigation-pane nil t)
+          (toc-org--refresh-navigation-pane max-depth)
+          ;; add after refresh so with-temp-buffer inside toc-org-raw-toc
+          ;; doesn't fire the hook before the pane window is shown
+          (add-hook 'buffer-list-update-hook #'toc-org--close-toc-pane))
+        (if (with-current-buffer win-buf (zerop (buffer-size)))
+            (progn
+              (kill-buffer win-buf)
+              (setq toc-org--toc-buffer nil)
+              (remove-hook 'kill-buffer-hook #'toc-org--close-toc-pane-on-kill t)
+              (remove-hook 'after-save-hook  #'toc-org--refresh-navigation-pane t)
+              (message "toc-org: No headings found in this buffer."))
+          (toc-org--goto-current-heading max-depth)
+          (select-window
+           (display-buffer
+            win-buf
+            (cons 'display-buffer-in-side-window
+                  (list (cons 'side          toc-org-side-window-side)
+                        (cons 'window-width  toc-org-side-window-size)
+                        (cons 'window-height toc-org-side-window-size)
+                        '(slot . 0)))))))))))
 
 ;; Local Variables:
 ;; compile-command: "emacs -batch -l ert -l toc-org.el -l toc-org-test.el -f ert-run-tests-batch-and-exit && emacs -batch -f batch-byte-compile toc-org.el 2>&1 | sed -n '/Warning\|Error/p' | xargs -r ls"

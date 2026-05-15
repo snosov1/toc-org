@@ -21,6 +21,7 @@ name conflict with one of the org contrib modules.
   - [[#follow-links][Follow links]]
   - [[#exclude-headings][Exclude headings]]
   - [[#quote-table-of-contents][Quote table of contents]]
+  - [[#navigation-pane][Navigation pane]]
   - [[#shortcut-for-toc-tag][Shortcut for TOC tag]]
 - [[#markdown-support][Markdown support]]
 - [[#different-href-styles][Different href styles]]
@@ -87,8 +88,8 @@ You can also use =@= as separator, instead of =_=.
 
 It's possible to set the default values of max depth and hrefify function with
 =toc-org-max-depth= and =toc-org-hrefify-default= variables. But, note, that if
-you do this outside of the org file itself, then you can face conflicts if you 
-work on the same file collaboratively with someone else, as your default configs 
+you do this outside of the org file itself, then you can face conflicts if you
+work on the same file collaboratively with someone else, as your default configs
 can vary.
 
 ** Follow links
@@ -119,6 +120,17 @@ For presentation purposes, you might want to put the table of contents in a
 quote block (i.e. =#+BEGIN_QUOTE= / =#+END_QUOTE=). In that case, GitHub, for
 example, will add a vertical line to the left of the TOC that makes it distinct
 from the main text. To do this, just add a =:QUOTE:= tag to the TOC heading.
+
+** Navigation pane
+
+You can display the table of contents in a dedicated side window for easier
+navigation using: =M-x toc-org-navigation-pane= (mapped to =C-c t=). This
+command works as a *toggle*: if the window is already open, calling the command
+again will close it.
+
+The buffer is read-only with single-letter shortcuts =n=, =p=, =f=, =b= for
+navigation; =k= to close; and =RET= to follow a link.  See =C-h f
+toc-org-navigation-pane= for customization options.
 
 ** Shortcut for TOC tag
 
